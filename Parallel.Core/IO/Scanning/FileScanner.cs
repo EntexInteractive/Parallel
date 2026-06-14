@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Collections.Concurrent;
 using System.Data;
@@ -99,7 +99,7 @@ namespace Parallel.Core.IO.Scanning
             if (!source.TryGenerateCheckSums() || !target.TryGenerateCheckSums()) return false;
             return source.LocalCheckSum != target.LocalCheckSum;
         }
-        
+
         public static bool IsSameFile(LocalFile source, LocalFile? target)
         {
             if (target is null) return false;
@@ -320,7 +320,7 @@ namespace Parallel.Core.IO.Scanning
             string[] dirs = path.Split(Path.DirectorySeparatorChar);
             string fileName = Path.GetFileName(path);
             string extension = Path.GetExtension(path);
-            
+
             foreach (string entry in exempt)
             {
                 if (path.StartsWith(entry, StringComparison.OrdinalIgnoreCase))

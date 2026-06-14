@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Diagnostics;
 using System.IO.Compression;
@@ -88,8 +88,8 @@ namespace Parallel.Core.Storage
 
         public async Task<RemoteFile?> DownloadFileAsync(LocalFile file, string remotePath, CancellationToken ct = default)
         {
-            if(!await ExistsAsync(remotePath)) return null;
-            
+            if (!await ExistsAsync(remotePath)) return null;
+
             using GetObjectResponse? response = await _client.GetObjectAsync(_bucket, remotePath, ct);
             await using FileStream createStream = File.Create(file.Fullname);
             await using ZstdStream zstdStream = new(response.ResponseStream, ZstdStreamMode.Decompress);

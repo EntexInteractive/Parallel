@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -55,14 +55,14 @@ namespace Parallel.Core.IO.Syncing
                 Log.Error("[{LocalVaultId}] Failed to connect to vault!", LocalVault.Id);
                 return false;
             }
-            
+
             string root = PathBuilder.GetRootDirectory(LocalVault);
             if (!await StorageProvider.ExistsAsync(root))
             {
                 await StorageProvider.CreateDirectoryAsync(root);
                 Log.Debug("Created root directory: {Root}", root);
             }
-            
+
             // Checks temp files for a local download of the config file
             if (!File.Exists(TempConfigFile) || File.GetLastWriteTimeUtc(TempConfigFile) <= DateTime.UtcNow.AddHours(-6) || force)
             {
@@ -98,9 +98,9 @@ namespace Parallel.Core.IO.Syncing
                     string remoteDbFile = PathBuilder.GetDatabaseFile(LocalVault);
                     await StorageProvider.DownloadFileAsync(new LocalFile(TempDbFile), remoteDbFile);
                     Log.Debug("Downloaded file: {TempDbFile}", TempDbFile);
-                }   
+                }
             }
-            
+
             // Load the temp files
             Database = new SqliteContext(TempDbFile);
             RemoteVaultConfig? config = RemoteVaultConfig.Load(TempConfigFile);

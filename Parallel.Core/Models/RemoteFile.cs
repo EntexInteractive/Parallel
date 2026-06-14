@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using Parallel.Core.Utils;
 
@@ -25,12 +25,12 @@ namespace Parallel.Core.Models
         /// The time the file was either last saved or deleted.
         /// </summary>
         public UnixTime LastUpdate { get; set; }
-        
+
         /// <summary>
         /// The size, in bytes, of the file in the remote backup.
         /// </summary>
         public long RemoteSize { get; set; }
-        
+
         /// <summary>
         /// The checksum used to check if the file was fully uploaded.
         /// </summary>

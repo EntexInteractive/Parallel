@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -133,9 +133,12 @@ namespace Parallel.Core.IO.Syncing
                     threadLock.Release();
                 }
             });
-            
+
             Log.Information("Cleaning up {CleanFilesLength:N0} files...", cleanupFiles.Count);
-            foreach (string path in cleanupFiles) if(File.Exists(path)) File.Delete(path);
+            foreach (string path in cleanupFiles)
+                if (File.Exists(path))
+                    File.Delete(path);
+
             return completed;
         }
 
@@ -163,7 +166,7 @@ namespace Parallel.Core.IO.Syncing
                     Interlocked.Increment(ref completed);
                 }
             });
-            
+
             return completed;
         }
 
@@ -171,7 +174,7 @@ namespace Parallel.Core.IO.Syncing
         {
             if (!files.Any()) return 0;
             int completed = 0;
-            
+
             ConcurrentDictionary<string, SemaphoreSlim> threadPool = new ConcurrentDictionary<string, SemaphoreSlim>();
             await System.Threading.Tasks.Parallel.ForEachAsync(files, ParallelConfig.Options, async (file, ct) =>
             {
@@ -194,7 +197,7 @@ namespace Parallel.Core.IO.Syncing
                         progress.Failed(file, "File corrupted!");
                         return;
                     }
-                    
+
                     progress.Report(ProgressOperation.Scrubbed, file);
                     Interlocked.Increment(ref completed);
                 }
@@ -207,7 +210,7 @@ namespace Parallel.Core.IO.Syncing
                     threadLock.Release();
                 }
             });
-            
+
             return completed;
         }
     }

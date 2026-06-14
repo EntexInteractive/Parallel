@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Collections.Concurrent;
 using Serilog.Core;
@@ -15,7 +15,7 @@ namespace Parallel.Core.Utils
         /// Gets an array of log messages.
         /// </summary>
         public readonly ConcurrentBag<string> Logs = new ConcurrentBag<string>();
-        
+
         /// <summary>
         /// Gets the number of errors in this log.
         /// </summary>

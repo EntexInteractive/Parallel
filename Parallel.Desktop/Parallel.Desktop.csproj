@@ -35,27 +35,27 @@
     <ItemGroup>
         <Folder Include="Models\"/>
         <AvaloniaResource Include="Assets\**"/>
-        <AvaloniaResource Include="Assets\parallel-red.ico" />
+        <AvaloniaResource Include="Assets\parallel-red.ico"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.17" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.17" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.17" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.17" />
+        <PackageReference Include="Avalonia" Version="11.3.17"/>
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.17"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.17"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.17"/>
         <PackageReference Include="Avalonia.Diagnostics" Version="11.3.17">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">none</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="MessageBox.Avalonia" Version="3.3.1.1" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2"/>
+        <PackageReference Include="MessageBox.Avalonia" Version="3.3.1.1"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
         <PackageReference Include="Serilog.Sinks.File" Version="7.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Parallel.Core\Parallel.Core.csproj" />
+        <ProjectReference Include="..\Parallel.Core\Parallel.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

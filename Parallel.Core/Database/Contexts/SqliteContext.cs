@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Data;
 using Microsoft.Data.Sqlite;
@@ -26,7 +26,9 @@ namespace Parallel.Core.Database.Contexts
         public async Task InitializeAsync()
         {
             Log.Information("Creating index database...");
-            await _semaphore.ExecuteAsync("CREATE TABLE IF NOT EXISTS `objects` (`name` TEXT NOT NULL, `fullname` TEXT NOT NULL, `parentDir` TEXT NOT NULL, `lastWrite` LONG INTEGER NOT NULL, `lastUpdate` LONG INTEGER NOT NULL, `localSize` LONG INTEGER NOT NULL, `remoteSize` LONG INTEGER NOT NULL, `type` TEXT NOT NULL DEFAULT Other CHECK(`type` IN ('Document', 'Photo', 'Music', 'Video', 'Other')), `hidden` INTEGER NOT NULL DEFAULT 0, `readOnly` INTEGER NOT NULL DEFAULT 0, `deleted` INTEGER NOT NULL DEFAULT 0, `localCheckSum` TEXT, `remoteCheckSum` TEXT, UNIQUE (fullname, localCheckSum));");
+            await _semaphore.ExecuteAsync(
+                "CREATE TABLE IF NOT EXISTS `objects` (`name` TEXT NOT NULL, `fullname` TEXT NOT NULL, `parentDir` TEXT NOT NULL, `lastWrite` LONG INTEGER NOT NULL, `lastUpdate` LONG INTEGER NOT NULL, `localSize` LONG INTEGER NOT NULL, `remoteSize` LONG INTEGER NOT NULL, `type` TEXT NOT NULL DEFAULT Other CHECK(`type` IN ('Document', 'Photo', 'Music', 'Video', 'Other')), `hidden` INTEGER NOT NULL DEFAULT 0, `readOnly` INTEGER NOT NULL DEFAULT 0, `deleted` INTEGER NOT NULL DEFAULT 0, `localCheckSum` TEXT, `remoteCheckSum` TEXT, UNIQUE (fullname, localCheckSum));");
+
             await _semaphore.ExecuteAsync("CREATE TABLE IF NOT EXISTS `history` (`timestamp` LONG INTEGER NOT NULL, `fullname` TEXT NOT NULL, `type` INTEGER NOT NULL, PRIMARY KEY(`timestamp`));");
             await _semaphore.ExecuteAsync("CREATE TABLE IF NOT EXISTS `snapshots` (`timestamp` LONG INTEGER NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`timestamp`));");
             await _semaphore.ExecuteAsync("CREATE INDEX idx_objects_path_update ON objects(fullname, lastupdate DESC, deleted);");
@@ -106,13 +108,13 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT * FROM (SELECT * FROM objects WHERE fullname LIKE @Path AND lastupdate <= @Time AND deleted = @deleted ORDER BY lastwrite DESC) GROUP BY fullname;";
             return await _semaphore.QueryAsync<LocalFile>(sql, new { Path = $"{path}%", Time = new UnixTime(timestamp).TotalMilliseconds, deleted });
         }
-        
+
         public async Task<IReadOnlyList<LocalFile>> GetRevisedFilesAsync(string path)
         {
             string sql = $"SELECT * FROM objects WHERE fullname LIKE '{path}%' AND lastupdate NOT IN (SELECT MAX(lastupdate) FROM objects GROUP BY fullname) ORDER BY lastupdate DESC;";
             return await _semaphore.QueryAsync<LocalFile>(sql, new { Path = $"{path}%" });
         }
-        
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<LocalFile>> GetFilesAsync(string path, DateTime timestamp)
         {
@@ -166,7 +168,7 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT * FROM history WHERE fullname LIKE @Fullname ORDER BY timestamp DESC;";
             return await _semaphore.QueryAsync<HistoryEvent>(sql, new { Fullname = $"%{path}%" });
         }
-        
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path, int limit)
         {
@@ -180,7 +182,7 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT * FROM history WHERE fullname LIKE @Fullname AND type = @type ORDER BY timestamp DESC;";
             return await _semaphore.QueryAsync<HistoryEvent>(sql, new { Fullname = $"%{path}%", type });
         }
-        
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path, HistoryType? type, int limit)
         {
@@ -195,7 +197,7 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT lastupdate FROM objects ORDER BY lastupdate DESC LIMIT 1;";
             return UnixTime.FromMilliseconds(await _semaphore.QuerySingleAsync<long>(sql)).ToLocalTime();
         }
-        
+
         /// <inheritdoc />
         public async Task<bool> AddSnapshotAsync(string snapshot)
         {

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ namespace Parallel.Cli.Commands
 
         private Stopwatch? _sw;
         private readonly List<Task> _tasks = new List<Task>();
-        private int _totalTasks = 0;
+        private readonly int _totalTasks = 0;
 
         public UnzipCommand() : base("unzip", "Unzips files in a directory.")
         {
@@ -33,7 +33,7 @@ namespace Parallel.Cli.Commands
             }
 
             CommandLine.WriteLine($"Unzipping {files.Length:N0} files...", ConsoleColor.DarkGray);
-            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }; 
+            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
             System.Threading.Tasks.Parallel.ForEach(files, options, (file, ct) =>
             {
                 using (FileStream openFile = File.OpenRead(file))
@@ -42,7 +42,7 @@ namespace Parallel.Cli.Commands
                 {
                     gZip.CopyTo(createFile);
                 }
-                
+
                 File.SetAttributes(file, File.GetAttributes(file) & ~FileAttributes.ReadOnly);
                 File.Delete(file);
             });

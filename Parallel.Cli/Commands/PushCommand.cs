@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using System.Diagnostics;
@@ -27,13 +27,13 @@ namespace Parallel.Cli.Commands
         private readonly Command listCmd = new("list", "Shows all directories in the backup list.");
         private readonly Command removeCmd = new("remove", "Removes a directory from the backup list.");
 
-        public PushCommand() : base("sync", "Syncs the system with the vaults.")
+        public PushCommand() : base("push", "Pushes files to vaults.")
         {
             this.AddOption(_sourceOpt);
             this.AddOption(_configOpt);
             this.AddOption(_forceOpt);
             this.AddOption(_verboseOpt);
-            this.SetHandler(HandleSyncAsync, _sourceOpt, _configOpt, _forceOpt, _verboseOpt);
+            this.SetHandler(HandlePushAsync, _sourceOpt, _configOpt, _forceOpt, _verboseOpt);
 
             this.AddCommand(addCmd);
             addCmd.AddArgument(_sourceArg);
@@ -46,9 +46,9 @@ namespace Parallel.Cli.Commands
             removeCmd.SetHandler(HandleRemoveAsync, _sourceArg, _configOpt);
         }
 
-        #region Sync
+        #region Push
 
-        private async Task HandleSyncAsync(string? path, string? config, bool force, bool verbose)
+        private async Task HandlePushAsync(string? path, string? config, bool force, bool verbose)
         {
             _sw = Stopwatch.StartNew();
             LocalVaultConfig? localVault = ParallelConfig.GetVault(config);
@@ -56,27 +56,27 @@ namespace Parallel.Cli.Commands
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await SyncPathAsync(localVault, path, force, verbose);
+                    await PushPathAsync(localVault, path, force, verbose);
                 }
                 else
                 {
-                    await SyncSystemAsync(localVault, force, verbose);
+                    await PushSystemAsync(localVault, force, verbose);
                 }
             }
             else
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await Program.Settings.ForEachVaultAsync(vault => SyncPathAsync(vault, path, force, verbose));
+                    await Program.Settings.ForEachVaultAsync(vault => PushPathAsync(vault, path, force, verbose));
                 }
                 else
                 {
-                    await Program.Settings.ForEachVaultAsync(vault => SyncSystemAsync(vault, force, verbose));
+                    await Program.Settings.ForEachVaultAsync(vault => PushSystemAsync(vault, force, verbose));
                 }
             }
         }
 
-        private async Task SyncSystemAsync(LocalVaultConfig vault, bool force, bool verbose)
+        private async Task PushSystemAsync(LocalVaultConfig vault, bool force, bool verbose)
         {
             ISyncManager? syncManager = SyncManager.CreateNew(vault);
             if (syncManager == null || !await syncManager.ConnectAsync())
@@ -85,13 +85,13 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            foreach (string path in syncManager.RemoteVault.BackupDirectories)
+            foreach (string path in syncManager.RemoteVault.PushDirectories)
             {
-                await SyncInternalAsync(syncManager, path, force, verbose);
+                await PushInternalAsync(syncManager, path, force, verbose);
             }
         }
 
-        private async Task SyncPathAsync(LocalVaultConfig vault, string path, bool force, bool verbose)
+        private async Task PushPathAsync(LocalVaultConfig vault, string path, bool force, bool verbose)
         {
             ISyncManager? syncManager = SyncManager.CreateNew(vault);
             if (syncManager == null || !await syncManager.ConnectAsync())
@@ -100,13 +100,13 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            await SyncInternalAsync(syncManager, path, force, verbose);
+            await PushInternalAsync(syncManager, path, force, verbose);
         }
 
-        private async Task SyncInternalAsync(ISyncManager syncManager, string path, bool force, bool verbose)
+        private async Task PushInternalAsync(ISyncManager syncManager, string path, bool force, bool verbose)
         {
             // Normalize paths for safe comparison
-            string[] backupFolders = syncManager.RemoteVault.BackupDirectories.ToArray();
+            string[] backupFolders = syncManager.RemoteVault.PushDirectories.ToArray();
             string[] ignoredFolders = syncManager.RemoteVault.IgnoreDirectories.ToArray();
 
             bool isFile = PathBuilder.IsFile(path);
@@ -135,7 +135,7 @@ namespace Parallel.Cli.Commands
             CommandLine.WriteLine(syncManager.RemoteVault, $"Pushing {files.Length:N0} files...", ConsoleColor.DarkGray);
             IProgressReporter progressReporter = verbose ? new ProgressReporter(syncManager.RemoteVault, successFiles) : new LoggingProgressReporter(syncManager.RemoteVault);
             int pushedFiles = await syncManager.PushFilesAsync(files, progressReporter, force);
-            
+
             CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully pushed {pushedFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
             await syncManager.DisconnectAsync();
         }
@@ -166,7 +166,7 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            if (!syncManager.RemoteVault.BackupDirectories.Add(path))
+            if (!syncManager.RemoteVault.PushDirectories.Add(path))
             {
                 CommandLine.WriteLine(vault, $"Unable to add path: '{path}'", ConsoleColor.Yellow);
                 return;
@@ -202,7 +202,7 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            if (!syncManager.RemoteVault.BackupDirectories.Remove(path))
+            if (!syncManager.RemoteVault.PushDirectories.Remove(path))
             {
                 CommandLine.WriteLine(vault, $"Unable to remove path: '{path}'", ConsoleColor.Yellow);
                 return;

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Data;
 using System.Security.Cryptography;
@@ -74,7 +74,7 @@ namespace Parallel.Core.Models
         /// The checksum used to check if the file has changed.
         /// </summary>
         public string? LocalCheckSum { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// The checksum used to check if the file was fully uploaded.
         /// </summary>
@@ -94,7 +94,7 @@ namespace Parallel.Core.Models
             Deleted = !File.Exists(path);
 
             if (!File.Exists(path)) return;
-            
+
             FileInfo fileInfo = new FileInfo(path);
             LocalSize = fileInfo.Length;
             RemoteSize = fileInfo.Length;
@@ -192,7 +192,7 @@ namespace Parallel.Core.Models
 
                 fs.Position = 0;
                 LocalCheckSum = Convert.ToHexStringLower(sha256.ComputeHash(fs));
-                
+
                 //Log.Debug("LocalCheckSum:  {LocalCheckSum}", LocalCheckSum);
                 //Log.Debug("RemoteCheckSum: {RemoteCheckSum}", RemoteCheckSum);
 
@@ -204,7 +204,7 @@ namespace Parallel.Core.Models
                 return false;
             }
         }
-        
+
         private LocalFile(LocalFile file, long remoteSize, string? remoteCheckSum)
         {
             Name = file.Name;

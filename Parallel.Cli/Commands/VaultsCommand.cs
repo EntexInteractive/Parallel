@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using Parallel.Cli.Utils;
@@ -53,7 +53,7 @@ namespace Parallel.Cli.Commands
                     string? bucketInput = CommandLine.ReadString("Bucket Name (Leave empty for default)");
                     string bucketName = string.IsNullOrEmpty(bucketInput) ? "parallel" : bucketInput;
                     spc.RootDirectory = bucketName;
-                    
+
                     string? regionInput = CommandLine.ReadString("Region Name (Leave empty for default)");
                     string regionName = string.IsNullOrEmpty(regionInput) ? "us-east-1" : regionInput;
                     spc.Region = regionName;
@@ -112,7 +112,8 @@ namespace Parallel.Cli.Commands
 
                 RemoteVaultConfig remoteVault = syncManager.RemoteVault;
                 CommandLine.WriteLine($"'{remoteVault.Name}' ({remoteVault.Id}):");
-                CommandLine.WriteArray("Backup Directories", remoteVault.BackupDirectories);
+                CommandLine.WriteArray("Push Directories", remoteVault.PushDirectories);
+                CommandLine.WriteArray("Pull Directories", remoteVault.PullDirectories);
                 CommandLine.WriteArray("Ignore Directories", remoteVault.IgnoreDirectories);
                 CommandLine.WriteArray("Prune Directories", remoteVault.PruneDirectories);
                 CommandLine.WriteLine($"Prune Period: {remoteVault.PrunePeriod} days");

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using Parallel.Core.IO;
 using System;
@@ -94,7 +94,7 @@ namespace Parallel.Core.Database
         /// <param name="deleted"></param>
         /// <returns></returns>
         Task<IReadOnlyList<LocalFile>> GetFilesAsync(string path, DateTime timestamp);
-        
+
         /// <summary>
         /// Gets a list of files.
         /// </summary>
@@ -145,21 +145,21 @@ namespace Parallel.Core.Database
         Task<bool> AddHistoryAsync(HistoryType type, LocalFile file);
 
         Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path);
-        
+
         Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path, int limit);
 
         Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path, HistoryType? type);
-        
+
         Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path, HistoryType? type, int limit);
 
         #endregion
-        
+
         #region Snapshots
-        
+
         Task<bool> AddSnapshotAsync(string snapshot);
-        
+
         Task<IReadOnlyList<string>> GetSnapshotsAsync();
-        
+
         Task<string?> GetSnapshotAsync(string? name);
 
         Task RemoveSnapshotAsync(string snapshot);

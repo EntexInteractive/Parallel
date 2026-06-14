@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.IO;
 using Parallel.Core.IO;
@@ -9,7 +9,7 @@ namespace Parallel.Desktop.Settings
     public class ParallelDesktopConfig : ParallelConfig
     {
         private static string ConfigFile { get; } = Path.Combine(PathBuilder.ProgramData, "Desktop-Configuration.json");
-        
+
         public new static ParallelDesktopConfig Load()
         {
             Log.Debug($"Loading config file: {ConfigFile}");
@@ -19,7 +19,7 @@ namespace Parallel.Desktop.Settings
             ParallelDesktopConfig? config = JsonConvert.DeserializeObject<ParallelDesktopConfig>(json);
             return config ?? new ParallelDesktopConfig();
         }
-        
+
         /// <summary>
         /// Saves settings to a file.
         /// </summary>

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using Parallel.Cli.Utils;
@@ -25,7 +25,7 @@ namespace Parallel.Cli.Commands
                 await FetchVaultAsync(localVault);
                 return;
             }
-            
+
             await Program.Settings.ForEachVaultAsync(FetchVaultAsync);
         }
 
@@ -38,7 +38,7 @@ namespace Parallel.Cli.Commands
                 CommandLine.WriteLine(localVault, "Failed to connect to vault!", ConsoleColor.Red);
                 return;
             }
-            
+
             CommandLine.WriteLine(syncManager.LocalVault, $"Successfully fetched vault data for: '{localVault.Name}'", ConsoleColor.Green);
             await syncManager.DisconnectAsync();
         }
