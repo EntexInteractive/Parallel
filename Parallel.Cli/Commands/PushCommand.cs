@@ -12,7 +12,7 @@ using Parallel.Core.Settings;
 
 namespace Parallel.Cli.Commands
 {
-    public class SyncCommand : Command
+    public class PushCommand : Command
     {
         private Stopwatch _sw = new Stopwatch();
 
@@ -27,7 +27,7 @@ namespace Parallel.Cli.Commands
         private readonly Command listCmd = new("list", "Shows all directories in the backup list.");
         private readonly Command removeCmd = new("remove", "Removes a directory from the backup list.");
 
-        public SyncCommand() : base("sync", "Syncs the system with the vaults.")
+        public PushCommand() : base("sync", "Syncs the system with the vaults.")
         {
             this.AddOption(_sourceOpt);
             this.AddOption(_configOpt);
@@ -132,11 +132,11 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            CommandLine.WriteLine(syncManager.RemoteVault, $"Syncing {files.Length:N0} files...", ConsoleColor.DarkGray);
+            CommandLine.WriteLine(syncManager.RemoteVault, $"Pushing {files.Length:N0} files...", ConsoleColor.DarkGray);
             IProgressReporter progressReporter = verbose ? new ProgressReporter(syncManager.RemoteVault, successFiles) : new LoggingProgressReporter(syncManager.RemoteVault);
-            int backedUpFiles = await syncManager.BackupFilesAsync(files, progressReporter, force);
+            int pushedFiles = await syncManager.PushFilesAsync(files, progressReporter, force);
             
-            CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully synced {backedUpFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
+            CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully pushed {pushedFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
             await syncManager.DisconnectAsync();
         }
 

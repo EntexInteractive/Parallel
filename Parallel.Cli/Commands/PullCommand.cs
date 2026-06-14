@@ -15,19 +15,19 @@ using Parallel.Core.Utils;
 
 namespace Parallel.Cli.Commands
 {
-    public class RestoreCommand : Command
+    public class PullCommand : Command
     {
         private Stopwatch _sw = new Stopwatch();
 
         private readonly Option<string> _sourceOpt = new(["--path", "-p"], "The source path to restore.");
         private readonly Option<string> _configOpt = new(["--config", "-c"], "The vault configuration to use.");
-        private readonly Option<DateTime> _beforeOpt = new(["--before"], "Restores files before a certain timestamp.");
+        private readonly Option<DateTime> _beforeOpt = new(["--before"], "Pulls files before a certain timestamp.");
         private readonly Option<string> _remapOpt = new(["--remap"], "The new directory to map restored files to.");
         private readonly Option<bool> _forceOpt = new(["--force", "-f"], "Forces restoring, bypassing safe guards.");
         private readonly Option<bool> _dryRunOpt = new(["--dry-run"], "Previews the command without executing it.");
         private readonly Option<bool> _verboseOpt = new(["--verbose", "-v"], "Shows verbose output.");
 
-        public RestoreCommand() : base("restore", "Restores files from the backup.")
+        public PullCommand() : base("restore", "Pulls files from the backup.")
         {
             this.AddOption(_sourceOpt);
             this.AddOption(_configOpt);
@@ -36,10 +36,10 @@ namespace Parallel.Cli.Commands
             this.AddOption(_forceOpt);
             this.AddOption(_dryRunOpt);
             this.AddOption(_verboseOpt);
-            this.SetHandler(HandleRestoreAsync, _sourceOpt, _configOpt, _beforeOpt, _remapOpt, _forceOpt, _verboseOpt, _dryRunOpt);
+            this.SetHandler(HandlePullAsync, _sourceOpt, _configOpt, _beforeOpt, _remapOpt, _forceOpt, _verboseOpt, _dryRunOpt);
         }
 
-        private async Task HandleRestoreAsync(string? path, string? config, DateTime before, string? remap, bool force, bool verbose, bool dryRun)
+        private async Task HandlePullAsync(string? path, string? config, DateTime before, string? remap, bool force, bool verbose, bool dryRun)
         {
             _sw = Stopwatch.StartNew();
             DateTime timestamp = before != DateTime.MinValue ? before.AddMinutes(1).AddTicks(-1) : DateTime.Now;
@@ -48,27 +48,27 @@ namespace Parallel.Cli.Commands
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await RestorePathAsync(localVault, path, timestamp, remap, force, verbose, dryRun);
+                    await PullPathAsync(localVault, path, timestamp, remap, force, verbose, dryRun);
                 }
                 else
                 {
-                    await RestoreSystemAsync(localVault, timestamp, remap, force, verbose, dryRun);
+                    await PullSystemAsync(localVault, timestamp, remap, force, verbose, dryRun);
                 }
             }
             else
             {
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await Program.Settings.ForEachVaultAsync(vault => RestorePathAsync(vault, path, timestamp, remap, force, verbose, dryRun));
+                    await Program.Settings.ForEachVaultAsync(vault => PullPathAsync(vault, path, timestamp, remap, force, verbose, dryRun));
                 }
                 else
                 {
-                    await Program.Settings.ForEachVaultAsync(vault => RestoreSystemAsync(vault, timestamp, remap, force, verbose, dryRun));
+                    await Program.Settings.ForEachVaultAsync(vault => PullSystemAsync(vault, timestamp, remap, force, verbose, dryRun));
                 }
             }
         }
 
-        private async Task RestoreSystemAsync(LocalVaultConfig vault, DateTime timestamp, string? output, bool force, bool verbose, bool dryRun)
+        private async Task PullSystemAsync(LocalVaultConfig vault, DateTime timestamp, string? output, bool force, bool verbose, bool dryRun)
         {
             ISyncManager? syncManager = SyncManager.CreateNew(vault);
             if (syncManager == null || !await syncManager.ConnectAsync())
@@ -79,11 +79,11 @@ namespace Parallel.Cli.Commands
 
             foreach (string path in syncManager.RemoteVault.BackupDirectories)
             {
-                await RestoreInternalAsync(syncManager, path, timestamp, output, force, verbose, dryRun);
+                await PullInternalAsync(syncManager, path, timestamp, output, force, verbose, dryRun);
             }
         }
 
-        private async Task RestorePathAsync(LocalVaultConfig vault, string path, DateTime timestamp, string? output, bool force, bool verbose, bool dryRun)
+        private async Task PullPathAsync(LocalVaultConfig vault, string path, DateTime timestamp, string? output, bool force, bool verbose, bool dryRun)
         {
             ISyncManager? syncManager = SyncManager.CreateNew(vault);
             if (syncManager == null || !await syncManager.ConnectAsync())
@@ -92,10 +92,10 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            await RestoreInternalAsync(syncManager, path, timestamp, output, force, verbose, dryRun);
+            await PullInternalAsync(syncManager, path, timestamp, output, force, verbose, dryRun);
         }
 
-        private async Task RestoreInternalAsync(ISyncManager syncManager, string path, DateTime timestamp, string? output, bool force, bool verbose, bool dryRun)
+        private async Task PullInternalAsync(ISyncManager syncManager, string path, DateTime timestamp, string? output, bool force, bool verbose, bool dryRun)
         {
             CommandLine.WriteLine(syncManager.RemoteVault, $"Scanning for files in {path}...", ConsoleColor.DarkGray);
             IReadOnlyList<LocalFile> files = await (syncManager.Database?.GetLatestFilesAsync(path, timestamp) ?? Task.FromResult<IReadOnlyList<LocalFile>>([]));
@@ -128,11 +128,11 @@ namespace Parallel.Cli.Commands
             }
             else
             {
-                CommandLine.WriteLine(syncManager.RemoteVault, $"Restoring {restoreFiles.Count:N0} files...", ConsoleColor.DarkGray);
+                CommandLine.WriteLine(syncManager.RemoteVault, $"Pulling {restoreFiles.Count:N0} files...", ConsoleColor.DarkGray);
                 IProgressReporter progressReporter = verbose ? new ProgressReporter(syncManager.RemoteVault, restoreFiles.Count) : new LoggingProgressReporter(syncManager.RemoteVault); 
-                int restoredFiles = await syncManager.RestoreFilesAsync(restoreFiles.ToArray(), progressReporter);
+                int pulledFiles = await syncManager.PullFilesAsync(restoreFiles.ToArray(), progressReporter);
                 
-                CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully restored {restoredFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);   
+                CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully pulled {pulledFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);   
                 await syncManager.DisconnectAsync();
             }
         }

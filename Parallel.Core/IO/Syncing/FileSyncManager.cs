@@ -24,7 +24,7 @@ namespace Parallel.Core.IO.Syncing
         public FileSyncManager(LocalVaultConfig localVault) : base(localVault) { }
 
         /// <inheritdoc/>
-        public override async Task<int> BackupFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite)
+        public override async Task<int> PushFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite)
         {
             if (!files.Any()) return 0;
             int completed = 0;
@@ -86,7 +86,7 @@ namespace Parallel.Core.IO.Syncing
         }
 
         /// <inheritdoc/>
-        public override async Task<int> RestoreFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress)
+        public override async Task<int> PullFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress)
         {
             if (!files.Any()) return 0;
             int completed = 0;

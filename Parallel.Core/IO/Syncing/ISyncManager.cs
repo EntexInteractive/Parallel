@@ -54,14 +54,14 @@ namespace Parallel.Core.IO.Syncing
         /// <param name="files"></param>
         /// <param name="progress"></param>
         /// <param name="overwrite"></param>
-        Task<int> BackupFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite);
+        Task<int> PushFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite);
 
         /// <summary>
         /// Restores an array of files from a vault.
         /// </summary>
         /// <param name="files"></param>
         /// <param name="progress"></param>
-        Task<int> RestoreFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
+        Task<int> PullFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
 
         /// <summary>
         /// Deletes files from a vault.

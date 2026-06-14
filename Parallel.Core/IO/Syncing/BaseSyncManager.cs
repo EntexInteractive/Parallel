@@ -126,10 +126,10 @@ namespace Parallel.Core.IO.Syncing
         }
 
         /// <inheritdoc />
-        public abstract Task<int> BackupFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite);
+        public abstract Task<int> PushFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite);
 
         /// <inheritdoc />
-        public abstract Task<int> RestoreFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
+        public abstract Task<int> PullFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
 
         /// <inheritdoc />
         public abstract Task<int> PruneFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
