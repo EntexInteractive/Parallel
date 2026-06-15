@@ -58,7 +58,7 @@ namespace Parallel.Core.Database
 
         #endregion
 
-        #region Files
+        #region Objects
 
         /// <summary>
         /// Adds a new file or updates an existing one.
@@ -111,8 +111,7 @@ namespace Parallel.Core.Database
         /// <returns></returns>
         Task<LocalFile?> GetFileAsync(string path);
 
-        Task<long> GetCurrentSizeAsync();
-        Task<long> GetRemoteSizeAsync();
+        Task<long> GetLocalSizeAsync();
         Task<long> GetTotalSizeAsync();
         Task<long> GetTotalFilesAsync();
         Task<long> GetTotalFilesAsync(bool deleted);

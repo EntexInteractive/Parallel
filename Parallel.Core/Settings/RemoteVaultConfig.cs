@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Parallel.Core.Database;
 using Parallel.Core.IO.Syncing;
+using Parallel.Core.Models;
 using Parallel.Core.Security;
 using Parallel.Core.Storage;
 using Parallel.Core.Utils;
@@ -37,7 +38,7 @@ namespace Parallel.Core.Settings
         /// <summary>
         /// A collection of directories to be pulled when reconciling.
         /// </summary>
-        public HashSet<string> PullDirectories { get; } = [];
+        public HashSet<PullRecord> PullDirectories { get; } = [];
 
         /// <summary>
         /// A collection of directories to be ignored when archiving or cleaning.
@@ -54,11 +55,11 @@ namespace Parallel.Core.Settings
         public RemoteVaultConfig(LocalVaultConfig localVault) : base(localVault.Id, localVault.Name, localVault.Credentials) { }
 
         [JsonConstructor]
-        public RemoteVaultConfig(string id, string name, StorageCredentials credentials, int prunePeriod, IEnumerable<string>? pushDirectories, IEnumerable<string>? pullDirectories, IEnumerable<string>? ignoreDirectories, IEnumerable<string>? pruneDirectories) : base(id, name, credentials)
+        public RemoteVaultConfig(string id, string name, StorageCredentials credentials, int prunePeriod, IEnumerable<string>? pushDirectories, IEnumerable<PullRecord>? pullDirectories, IEnumerable<string>? ignoreDirectories, IEnumerable<string>? pruneDirectories) : base(id, name, credentials)
         {
             PrunePeriod = prunePeriod;
             PushDirectories = new HashSet<string>(pushDirectories ?? []);
-            PullDirectories = new HashSet<string>(pullDirectories ?? []);
+            PullDirectories = new HashSet<PullRecord>(pullDirectories ?? []);
             IgnoreDirectories = new HashSet<string>(ignoreDirectories ?? []);
             PruneDirectories = new HashSet<string>(pruneDirectories ?? []);
         }
@@ -121,7 +122,7 @@ namespace Parallel.Core.Settings
 
         public void Save(string path)
         {
-            File.WriteAllText(path, JsonConvert.SerializeObject(this));
+            File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
     }
 }

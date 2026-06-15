@@ -55,16 +55,9 @@ namespace Parallel.Core.Database.Contexts
         }
 
         /// <inheritdoc />
-        public async Task<long> GetCurrentSizeAsync()
+        public async Task<long> GetLocalSizeAsync()
         {
             string sql = "SELECT COALESCE(SUM(f.localsize), 0) FROM objects f JOIN (SELECT fullname, MAX(lastupdate) AS max_lastupdate FROM objects WHERE deleted = 0 GROUP BY fullname) latest ON f.fullname = latest.fullname AND f.lastupdate = latest.max_lastupdate;";
-            return await _semaphore.QuerySingleAsync<long>(sql);
-        }
-
-        /// <inheritdoc />
-        public async Task<long> GetRemoteSizeAsync()
-        {
-            string sql = "SELECT COALESCE(SUM(f.remotesize), 0) FROM objects f JOIN (SELECT localchecksum, MAX(lastupdate) AS max_lastupdate FROM objects GROUP BY localchecksum) latest ON f.localchecksum = latest.localchecksum AND f.lastupdate = latest.max_lastupdate;";
             return await _semaphore.QuerySingleAsync<long>(sql);
         }
 
