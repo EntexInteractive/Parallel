@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/Parallel.Cli"
+    schedule:
+      interval: "weekly"
+    target-branch: "main"
+
+  - package-ecosystem: "nuget"
+    directory: "/Parallel.Core"
+    schedule:
+      interval: "weekly"
+    target-branch: "main"
+
+  - package-ecosystem: "nuget"
+    directory: "/Parallel.Desktop"
+    schedule:
+      interval: "weekly"
+    target-branch: "main"
