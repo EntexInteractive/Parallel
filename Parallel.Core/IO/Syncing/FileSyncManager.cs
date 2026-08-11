@@ -37,7 +37,7 @@ namespace Parallel.Core.IO.Syncing
             Log.Information("Uploading {UploadFilesLength:N0} files...", uploadFiles.Length);
             await System.Threading.Tasks.Parallel.ForEachAsync(uploadFiles, ParallelConfig.Options, async (file, ct) =>
             {
-                if (!file.TryGenerateCheckSums()) return;
+                if (!file.TryGenerateRemoteCheckSum()) return;
 
                 SemaphoreSlim threadLock = threadPool.GetOrAdd(file.RemoteCheckSum!, _ => new SemaphoreSlim(1, 1));
                 string remotePath = PathBuilder.GetObjectFile(RemoteVault, file.RemoteCheckSum!);

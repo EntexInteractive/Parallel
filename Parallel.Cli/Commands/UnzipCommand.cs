@@ -21,7 +21,7 @@ namespace Parallel.Cli.Commands
             this.SetHandler(HandleUnzipAsync, sourceArg);
         }
 
-        private async Task HandleUnzipAsync(string path)
+        private Task HandleUnzipAsync(string path)
         {
             _sw = Stopwatch.StartNew();
             CommandLine.WriteLine($"Scanning for files in {path}...", ConsoleColor.DarkGray);
@@ -29,7 +29,7 @@ namespace Parallel.Cli.Commands
             if (files.Length == 0)
             {
                 CommandLine.WriteLine("No files found to unzip!", ConsoleColor.Yellow);
-                return;
+                return Task.CompletedTask;
             }
 
             CommandLine.WriteLine($"Unzipping {files.Length:N0} files...", ConsoleColor.DarkGray);
@@ -48,6 +48,7 @@ namespace Parallel.Cli.Commands
             });
 
             CommandLine.WriteLine($"Successfully unzipped {files.Length:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
+            return Task.CompletedTask;
         }
 
         private void DecompressFile(string path, bool keep)

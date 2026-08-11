@@ -16,7 +16,7 @@ namespace Parallel.Core.IO
             return filePath;
         }
 
-        public static async Task<IEnumerable<SnapshotRecord>> LoadSnapshotsAsync(string filePath)
+        public static Task<IEnumerable<SnapshotRecord>> LoadSnapshotsAsync(string filePath)
         {
             throw new NotImplementedException();
         }

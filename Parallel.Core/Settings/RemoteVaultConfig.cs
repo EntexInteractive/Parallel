@@ -115,8 +115,6 @@ namespace Parallel.Core.Settings
         /// </summary>
         public new static RemoteVaultConfig? Load(string path)
         {
-            Console.WriteLine($"Loading remote vault config: {path}");
-            Console.WriteLine(File.ReadAllText(path));
             return !File.Exists(path) ? null : JsonConvert.DeserializeObject<RemoteVaultConfig>(File.ReadAllText(path));
         }
 
