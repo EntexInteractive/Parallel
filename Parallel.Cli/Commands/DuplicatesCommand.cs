@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using Parallel.Cli.Utils;
@@ -36,10 +36,10 @@ namespace Parallel.Cli.Commands
                 lines.Add($"{key} ({paths.Length:N0} items):");
                 lines.AddRange(paths.Select(value => $" - {value}"));
             }
-            
+
             string fileName = PathBuilder.TempFile;
             await File.WriteAllLinesAsync(fileName, lines);
-            
+
             CommandLine.WriteLine($"Scan found {duplicates.Count(kv => kv.Value.Length > 1):N0} duplicate files. ({Formatter.FromBytes(length)})", ConsoleColor.Green);
             CommandLine.WriteLine($"A detailed list can be found here: {fileName}", ConsoleColor.DarkGray);
         }

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Security.Cryptography;
 
@@ -11,26 +11,29 @@ namespace Parallel.Core.Utils
         private readonly Action<long>? _reportBytes;
         private long _totalWrite = 0;
         private long _totalRead = 0;
-        
+
         public HashStream(Stream inner)
         {
             _inner = inner;
         }
-        
+
         public HashStream(Stream inner, Action<long> reportBytes)
         {
             _inner = inner;
             _reportBytes = reportBytes;
         }
-        
+
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
             _inner.Dispose();
         }
-        
-        public string GetHashHexString() => Convert.ToHexStringLower(_hash.GetHashAndReset());
-        
+
+        public string GetHashHexString()
+        {
+            return Convert.ToHexStringLower(_hash.GetHashAndReset());
+        }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             int read = _inner.Read(buffer, offset, count);
@@ -60,7 +63,7 @@ namespace Parallel.Core.Utils
             _hash.AppendData(buffer.AsSpan(offset, count));
             _inner.Write(buffer, offset, count);
             _totalWrite += count;
-            
+
             _reportBytes?.Invoke(_totalWrite);
         }
 
@@ -69,7 +72,7 @@ namespace Parallel.Core.Utils
             _hash.AppendData(buffer.Span);
             await _inner.WriteAsync(buffer, cancellationToken);
             _totalWrite += buffer.Length;
-            
+
             _reportBytes?.Invoke(_totalWrite);
         }
 

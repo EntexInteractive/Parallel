@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -24,7 +24,7 @@ namespace Parallel.Core.IO.Syncing
         public FileSyncManager(LocalVaultConfig localVault) : base(localVault) { }
 
         /// <inheritdoc/>
-        public override async Task<int> BackupFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite)
+        public override async Task<int> PushFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite)
         {
             if (!files.Any()) return 0;
             int completed = 0;
@@ -37,7 +37,7 @@ namespace Parallel.Core.IO.Syncing
             Log.Information("Uploading {UploadFilesLength:N0} files...", uploadFiles.Length);
             await System.Threading.Tasks.Parallel.ForEachAsync(uploadFiles, ParallelConfig.Options, async (file, ct) =>
             {
-                if (!file.TryGenerateCheckSums()) return;
+                if (!file.TryGenerateRemoteCheckSum()) return;
 
                 SemaphoreSlim threadLock = threadPool.GetOrAdd(file.RemoteCheckSum!, _ => new SemaphoreSlim(1, 1));
                 string remotePath = PathBuilder.GetObjectFile(RemoteVault, file.RemoteCheckSum!);
@@ -86,7 +86,7 @@ namespace Parallel.Core.IO.Syncing
         }
 
         /// <inheritdoc/>
-        public override async Task<int> RestoreFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress)
+        public override async Task<int> PullFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress)
         {
             if (!files.Any()) return 0;
             int completed = 0;
@@ -133,9 +133,12 @@ namespace Parallel.Core.IO.Syncing
                     threadLock.Release();
                 }
             });
-            
+
             Log.Information("Cleaning up {CleanFilesLength:N0} files...", cleanupFiles.Count);
-            foreach (string path in cleanupFiles) if(File.Exists(path)) File.Delete(path);
+            foreach (string path in cleanupFiles)
+                if (File.Exists(path))
+                    File.Delete(path);
+
             return completed;
         }
 
@@ -163,7 +166,7 @@ namespace Parallel.Core.IO.Syncing
                     Interlocked.Increment(ref completed);
                 }
             });
-            
+
             return completed;
         }
 
@@ -171,7 +174,7 @@ namespace Parallel.Core.IO.Syncing
         {
             if (!files.Any()) return 0;
             int completed = 0;
-            
+
             ConcurrentDictionary<string, SemaphoreSlim> threadPool = new ConcurrentDictionary<string, SemaphoreSlim>();
             await System.Threading.Tasks.Parallel.ForEachAsync(files, ParallelConfig.Options, async (file, ct) =>
             {
@@ -194,7 +197,7 @@ namespace Parallel.Core.IO.Syncing
                         progress.Failed(file, "File corrupted!");
                         return;
                     }
-                    
+
                     progress.Report(ProgressOperation.Scrubbed, file);
                     Interlocked.Increment(ref completed);
                 }
@@ -207,7 +210,7 @@ namespace Parallel.Core.IO.Syncing
                     threadLock.Release();
                 }
             });
-            
+
             return completed;
         }
     }

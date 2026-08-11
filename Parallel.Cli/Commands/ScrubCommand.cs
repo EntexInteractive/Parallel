@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using System.Diagnostics;
@@ -24,7 +24,7 @@ namespace Parallel.Cli.Commands
             this.AddOption(_sourceOpt);
             this.AddOption(_configOpt);
             this.AddOption(_verboseOpt);
-            this.SetHandler(HandleScrubAsync, _sourceOpt, _configOpt,  _verboseOpt);
+            this.SetHandler(HandleScrubAsync, _sourceOpt, _configOpt, _verboseOpt);
         }
 
         private async Task HandleScrubAsync(string? path, string? config, bool verbose)
@@ -64,7 +64,7 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            foreach (string path in syncManager.RemoteVault.BackupDirectories)
+            foreach (string path in syncManager.RemoteVault.PushDirectories)
             {
                 await ScrubInternalAsync(syncManager, path, verbose);
             }
@@ -91,11 +91,11 @@ namespace Parallel.Cli.Commands
                 CommandLine.WriteLine($"No prunable files were found!", ConsoleColor.Yellow);
                 return;
             }
-            
+
             CommandLine.WriteLine(syncManager.RemoteVault, $"Scrubbing {files.Count:N0} files...", ConsoleColor.DarkGray);
             IProgressReporter progressReporter = verbose ? new ProgressReporter(syncManager.RemoteVault, files.Count) : new LoggingProgressReporter(syncManager.RemoteVault);
             int scrubbedFiles = await syncManager.ScrubFilesAsync(files, progressReporter);
-            
+
             CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully scrubbed {scrubbedFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
             await syncManager.DisconnectAsync();
         }

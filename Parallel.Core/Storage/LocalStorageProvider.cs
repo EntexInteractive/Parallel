@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -64,11 +64,11 @@ namespace Parallel.Core.Storage
 
         public async Task<RemoteFile?> DownloadFileAsync(LocalFile file, string remotePath, CancellationToken ct = default)
         {
-            if(!File.Exists(remotePath)) return null;
-            
+            if (!File.Exists(remotePath)) return null;
+
             long totalBytes = 0;
             string remoteChecksum;
-            
+
             await using FileStream openStream = File.OpenRead(remotePath);
             await using FileStream createStream = File.Create(file.Fullname);
             await using (ZstdStream zstdStream = new(openStream, ZstdStreamMode.Decompress))
@@ -76,10 +76,10 @@ namespace Parallel.Core.Storage
             {
                 await hashStream.CopyToAsync(createStream, ct);
                 await hashStream.FlushAsync(ct);
-                
+
                 remoteChecksum = hashStream.GetHashHexString();
             }
-            
+
             Log.Information("Downloaded file: {SourcePath} ({RemoteChecksum})", file.Fullname, remoteChecksum);
             return new RemoteFile(file.Name, file.Fullname, file.LastWrite, file.LastUpdate, totalBytes, remoteChecksum);
         }
@@ -105,7 +105,7 @@ namespace Parallel.Core.Storage
             RemoteFile file = new(fi.Name, path, fi.LastWriteTimeUtc, fi.Length, fi.Name);
             return Task.FromResult<RemoteFile?>(file);
         }
-        
+
         /// <inheritdoc/>
         public async Task<string?> HashFileAsync(string remotePath, int bufferSize = 81920, CancellationToken ct = default)
         {
@@ -114,27 +114,27 @@ namespace Parallel.Core.Storage
                 Log.Debug("Skipping file: {RemotePath}", remotePath);
                 return null;
             }
-            
+
             await using FileStream stream = File.OpenRead(remotePath);
             using IncrementalHash sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-            
+
             int bytesRead;
             byte[] buffer = new byte[bufferSize];
             while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
             {
                 sha.AppendData(buffer.AsSpan(0, bytesRead));
             }
-            
+
             return Convert.ToHexStringLower(sha.GetHashAndReset());
         }
-        
+
         private void InternalRenameFile(string sourcePath, string destPath)
         {
-            if(!File.Exists(sourcePath)) return;
-            
+            if (!File.Exists(sourcePath)) return;
+
             FileAttributes sourceAttrs = File.GetAttributes(sourcePath);
             bool isReadOnly = (sourceAttrs & FileAttributes.ReadOnly) != 0;
-            
+
             if (File.Exists(destPath))
             {
                 FileAttributes destAttrs = File.GetAttributes(destPath);
@@ -143,9 +143,9 @@ namespace Parallel.Core.Storage
                     File.SetAttributes(destPath, destAttrs & ~FileAttributes.ReadOnly);
                 }
             }
-            
+
             File.Move(sourcePath, destPath, true);
-            
+
             if (isReadOnly)
             {
                 FileAttributes destAttrs = File.GetAttributes(destPath);
@@ -164,7 +164,7 @@ namespace Parallel.Core.Storage
 
             string tempPath = remotePath + ".tmp";
             await CreateDirectoryAsync(await GetDirectoryName(remotePath));
-            
+
             long totalBytes = 0;
             string remoteChecksum;
 
@@ -180,9 +180,9 @@ namespace Parallel.Core.Storage
 
                 remoteChecksum = hashStream.GetHashHexString();
             }
-            
+
             InternalRenameFile(tempPath, remotePath);
-            
+
             Log.Information("Uploaded file: {SourcePath} ({RemoteChecksum})", file.Fullname, remoteChecksum);
             return new RemoteFile(file.Name, file.Fullname, file.LastWrite, file.LastUpdate, totalBytes, remoteChecksum);
         }

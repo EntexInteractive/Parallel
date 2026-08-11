@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Collections.Concurrent;
 using Parallel.Core.Models;
@@ -16,7 +16,7 @@ namespace Parallel.Core.IO
             return filePath;
         }
 
-        public static async Task<IEnumerable<SnapshotRecord>> LoadSnapshotsAsync(string filePath)
+        public static Task<IEnumerable<SnapshotRecord>> LoadSnapshotsAsync(string filePath)
         {
             throw new NotImplementedException();
         }
