@@ -15,7 +15,7 @@ using Parallel.Core.Utils;
 
 namespace Parallel.Cli.Commands
 {
-    public class PullCommand : Command
+    public class RestoreCommand : Command
     {
         private Stopwatch _sw = new Stopwatch();
 
@@ -33,7 +33,7 @@ namespace Parallel.Cli.Commands
         private readonly Command listCmd = new("list", "Shows all directories in the backup list.");
         private readonly Command removeCmd = new("remove", "Removes a directory from the backup list.");
 
-        public PullCommand() : base("pull", "Pulls files a vault.")
+        public RestoreCommand() : base("restore", "Pulls files a vault.")
         {
             this.AddOption(_sourceOpt);
             this.AddOption(_configOpt);

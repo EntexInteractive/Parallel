@@ -12,7 +12,7 @@ using Parallel.Core.Settings;
 
 namespace Parallel.Cli.Commands
 {
-    public class PushCommand : Command
+    public class SyncCommand : Command
     {
         private Stopwatch _sw = new Stopwatch();
 
@@ -27,7 +27,7 @@ namespace Parallel.Cli.Commands
         private readonly Command listCmd = new("list", "Shows all directories in the backup list.");
         private readonly Command removeCmd = new("remove", "Removes a directory from the backup list.");
 
-        public PushCommand() : base("push", "Pushes files to vaults.")
+        public SyncCommand() : base("sync", "Syncs system files with vaults.")
         {
             this.AddOption(_sourceOpt);
             this.AddOption(_configOpt);
@@ -89,6 +89,8 @@ namespace Parallel.Cli.Commands
             {
                 await PushInternalAsync(syncManager, path, force, verbose);
             }
+            
+            await syncManager.DisconnectAsync();
         }
 
         private async Task PushPathAsync(LocalVaultConfig vault, string path, bool force, bool verbose)
@@ -101,6 +103,7 @@ namespace Parallel.Cli.Commands
             }
 
             await PushInternalAsync(syncManager, path, force, verbose);
+            await syncManager.DisconnectAsync();
         }
 
         private async Task PushInternalAsync(ISyncManager syncManager, string path, bool force, bool verbose)
@@ -137,7 +140,6 @@ namespace Parallel.Cli.Commands
             int pushedFiles = await syncManager.PushFilesAsync(files, progressReporter, force);
 
             CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully pushed {pushedFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
-            await syncManager.DisconnectAsync();
         }
 
         #endregion
