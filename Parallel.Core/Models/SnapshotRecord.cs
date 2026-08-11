@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Collections.Concurrent;
 
@@ -13,22 +13,22 @@ namespace Parallel.Core.Models
         /// The path of the file on the local machine.
         /// </summary>
         public string Fullname { get; set; }
-        
+
         /// <summary>
         /// The time the current file was last written to.
         /// </summary>
         public DateTime LastWrite { get; set; }
-        
+
         /// <summary>
         /// The checksum used to check if the file has changed.
         /// </summary>
         public string? LocalCheckSum { get; set; }
-        
+
         /// <summary>
         /// The checksum used to check if the file was fully uploaded.
         /// </summary>
         public string? RemoteCheckSum { get; set; }
-        
+
         /// <summary>
         /// If the file is currently hidden.
         /// </summary>

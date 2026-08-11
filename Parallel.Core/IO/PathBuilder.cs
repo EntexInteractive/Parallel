@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Runtime.InteropServices;
 using System.Text;
@@ -38,7 +38,7 @@ namespace Parallel.Core.IO
                 return logDir;
             }
         }
-        
+
         public static string LogFile => Path.Combine(LogDirectory, UnixTime.Now.TotalMilliseconds + ".log");
 
         /// <summary>
@@ -205,9 +205,14 @@ namespace Parallel.Core.IO
         {
             ArgumentNullException.ThrowIfNull(fullPath);
             ArgumentNullException.ThrowIfNull(sourceRoot);
-            
-            if(string.IsNullOrEmpty(outputRoot)) return fullPath;
-            string Normalize(string p) => p.Replace('\\', '/').TrimEnd('/');
+
+            if (string.IsNullOrEmpty(outputRoot)) return fullPath;
+
+            string Normalize(string p)
+            {
+                return p.Replace('\\', '/').TrimEnd('/');
+            }
+
             fullPath = Normalize(fullPath);
             sourceRoot = Normalize(sourceRoot);
 

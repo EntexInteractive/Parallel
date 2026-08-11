@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Diagnostics;
 using Parallel.Core.Models;
@@ -12,12 +12,12 @@ namespace Parallel.Core.Diagnostics
     public class LoggingProgressReporter : IProgressReporter
     {
         private readonly LocalVaultConfig _localVault;
-        
+
         public LoggingProgressReporter(LocalVaultConfig localVault)
         {
             _localVault = localVault;
         }
-        
+
         /// <inheritdoc />
         public void Report(ProgressOperation operation, LocalFile file)
         {

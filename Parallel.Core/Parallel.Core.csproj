@@ -35,19 +35,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AWSSDK.S3" Version="4.0.24.3" />
+        <PackageReference Include="AWSSDK.S3" Version="4.0.101.7" />
         <PackageReference Include="Dapper" Version="2.1.79" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
-        <PackageReference Include="Serilog" Version="4.3.1" />
-        <PackageReference Include="SSH.NET" Version="2025.1.0" />
-        <PackageReference Include="ZstdSharp" Version="0.7.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Reference Include="Newtonsoft.Json">
-            <HintPath>C:\Users\kebbi\.nuget\packages\newtonsoft.json\13.0.3\lib\net6.0\Newtonsoft.Json.dll</HintPath>
-        </Reference>
+        <PackageReference Include="Serilog" Version="4.3.1"/>
+        <PackageReference Include="SSH.NET" Version="2025.1.0"/>
+        <PackageReference Include="ZstdSharp" Version="0.7.2"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

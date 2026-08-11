@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Data;
 using Microsoft.Data.Sqlite;
@@ -39,7 +39,7 @@ namespace Parallel.Core.Database.Contexts
         public async Task<bool> AddFileAsync(LocalFile file)
         {
             if (string.IsNullOrEmpty(file.Fullname)) throw new ArgumentNullException(nameof(file.Fullname));
-            if (!file.TryGenerateCheckSums()) throw new ArgumentNullException(nameof(file.LocalCheckSum));
+            if (!file.TryGenerateLocalCheckSum()) throw new ArgumentNullException(nameof(file.LocalCheckSum));
 
             string sql = "INSERT OR REPLACE INTO objects (name, fullname, parentDir, lastWrite, lastUpdate, localSize, remoteSize, type, hidden, readOnly, deleted, localCheckSum, remoteCheckSum) VALUES (@Name, @Fullname, @ParentDirectory, @LastWrite, @LastUpdate, @LocalSize, @RemoteSize, @Type, @Hidden, @ReadOnly, @Deleted, @LocalCheckSum, @RemoteCheckSum);";
             return await _semaphore.ExecuteAsync(sql, new { file.Name, file.Fullname, file.ParentDirectory, LastWrite = file.LastWrite.TotalMilliseconds, LastUpdate = UnixTime.Now.TotalMilliseconds, file.LocalSize, file.RemoteSize, Type = file.Type.ToString(), file.Hidden, file.ReadOnly, file.Deleted, file.LocalCheckSum, file.RemoteCheckSum }) > 0;
@@ -53,16 +53,9 @@ namespace Parallel.Core.Database.Contexts
         }
 
         /// <inheritdoc />
-        public async Task<long> GetCurrentSizeAsync()
+        public async Task<long> GetLocalSizeAsync()
         {
             string sql = "SELECT COALESCE(SUM(f.localsize), 0) FROM objects f JOIN (SELECT fullname, MAX(lastupdate) AS max_lastupdate FROM objects WHERE deleted = 0 GROUP BY fullname) latest ON f.fullname = latest.fullname AND f.lastupdate = latest.max_lastupdate;";
-            return await _semaphore.QuerySingleAsync<long>(sql);
-        }
-
-        /// <inheritdoc />
-        public async Task<long> GetRemoteSizeAsync()
-        {
-            string sql = "SELECT COALESCE(SUM(f.remotesize), 0) FROM objects f JOIN (SELECT localchecksum, MAX(lastupdate) AS max_lastupdate FROM objects GROUP BY localchecksum) latest ON f.localchecksum = latest.localchecksum AND f.lastupdate = latest.max_lastupdate;";
             return await _semaphore.QuerySingleAsync<long>(sql);
         }
 
@@ -106,13 +99,13 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT * FROM (SELECT * FROM objects WHERE fullname LIKE @Path AND lastupdate <= @Time AND deleted = @deleted ORDER BY lastwrite DESC) GROUP BY fullname;";
             return await _semaphore.QueryAsync<LocalFile>(sql, new { Path = $"{path}%", Time = new UnixTime(timestamp).TotalMilliseconds, deleted });
         }
-        
+
         public async Task<IReadOnlyList<LocalFile>> GetRevisedFilesAsync(string path)
         {
             string sql = $"SELECT * FROM objects WHERE fullname LIKE '{path}%' AND lastupdate NOT IN (SELECT MAX(lastupdate) FROM objects GROUP BY fullname) ORDER BY lastupdate DESC;";
             return await _semaphore.QueryAsync<LocalFile>(sql, new { Path = $"{path}%" });
         }
-        
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<LocalFile>> GetFilesAsync(string path, DateTime timestamp)
         {
@@ -166,7 +159,7 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT * FROM history WHERE fullname LIKE @Fullname ORDER BY timestamp DESC;";
             return await _semaphore.QueryAsync<HistoryEvent>(sql, new { Fullname = $"%{path}%" });
         }
-        
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path, int limit)
         {
@@ -180,7 +173,7 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT * FROM history WHERE fullname LIKE @Fullname AND type = @type ORDER BY timestamp DESC;";
             return await _semaphore.QueryAsync<HistoryEvent>(sql, new { Fullname = $"%{path}%", type });
         }
-        
+
         /// <inheritdoc />
         public async Task<IReadOnlyList<HistoryEvent>> GetHistoryAsync(string path, HistoryType? type, int limit)
         {
@@ -195,7 +188,7 @@ namespace Parallel.Core.Database.Contexts
             string sql = "SELECT lastupdate FROM objects ORDER BY lastupdate DESC LIMIT 1;";
             return UnixTime.FromMilliseconds(await _semaphore.QuerySingleAsync<long>(sql)).ToLocalTime();
         }
-        
+
         /// <inheritdoc />
         public async Task<bool> AddSnapshotAsync(string snapshot)
         {

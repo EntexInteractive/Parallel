@@ -1,13 +1,11 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
-using System.Diagnostics;
 using System.Reflection;
 using Parallel.Cli.Utils;
 using Parallel.Core.IO;
 using Parallel.Core.Settings;
 using Parallel.Core.Utils;
-using Serilog.Events;
 
 namespace Parallel.Cli
 {
@@ -29,7 +27,7 @@ namespace Parallel.Cli
 #if DEBUG
             Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.Console().CreateLogger();
 #else
-            Log.Logger = new LoggerConfiguration().WriteTo.File(PathBuilder.LogFile).CreateLogger();
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.File(PathBuilder.LogFile).CreateLogger();
 #endif
 
             Log.Information($"{assembly.Name} [Version {assembly.Version}]");

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Data;
 using System.Security.Cryptography;
@@ -74,7 +74,7 @@ namespace Parallel.Core.Models
         /// The checksum used to check if the file has changed.
         /// </summary>
         public string? LocalCheckSum { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// The checksum used to check if the file was fully uploaded.
         /// </summary>
@@ -94,7 +94,7 @@ namespace Parallel.Core.Models
             Deleted = !File.Exists(path);
 
             if (!File.Exists(path)) return;
-            
+
             FileInfo fileInfo = new FileInfo(path);
             LocalSize = fileInfo.Length;
             RemoteSize = fileInfo.Length;
@@ -171,9 +171,30 @@ namespace Parallel.Core.Models
             return results.All(b => b != null && (bool)b);
         }
 
-        public bool TryGenerateCheckSums()
+        public bool TryGenerateLocalCheckSum()
         {
             if (!string.IsNullOrEmpty(LocalCheckSum)) return true;
+
+            try
+            {
+                if (!File.Exists(Fullname)) return false;
+
+                using SHA256 sha256 = SHA256.Create();
+                using FileStream fs = File.OpenRead(Fullname);
+                
+                fs.Position = 0;
+                LocalCheckSum = Convert.ToHexStringLower(sha256.ComputeHash(fs));
+                return !string.IsNullOrEmpty(LocalCheckSum);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error while generating checksum");
+                return false;
+            }
+        }
+        
+        public bool TryGenerateRemoteCheckSum()
+        {
             if (!string.IsNullOrEmpty(RemoteCheckSum)) return true;
 
             try
@@ -189,14 +210,7 @@ namespace Parallel.Core.Models
                 }
 
                 RemoteCheckSum = hs.GetHashHexString();
-
-                fs.Position = 0;
-                LocalCheckSum = Convert.ToHexStringLower(sha256.ComputeHash(fs));
-                
-                //Log.Debug("LocalCheckSum:  {LocalCheckSum}", LocalCheckSum);
-                //Log.Debug("RemoteCheckSum: {RemoteCheckSum}", RemoteCheckSum);
-
-                return !string.IsNullOrEmpty(LocalCheckSum) && !string.IsNullOrEmpty(RemoteCheckSum);
+                return !string.IsNullOrEmpty(RemoteCheckSum);
             }
             catch (Exception ex)
             {
@@ -204,7 +218,7 @@ namespace Parallel.Core.Models
                 return false;
             }
         }
-        
+
         private LocalFile(LocalFile file, long remoteSize, string? remoteCheckSum)
         {
             Name = file.Name;

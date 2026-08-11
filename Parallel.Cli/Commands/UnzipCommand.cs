@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ namespace Parallel.Cli.Commands
 
         private Stopwatch? _sw;
         private readonly List<Task> _tasks = new List<Task>();
-        private int _totalTasks = 0;
+        private readonly int _totalTasks = 0;
 
         public UnzipCommand() : base("unzip", "Unzips files in a directory.")
         {
@@ -21,7 +21,7 @@ namespace Parallel.Cli.Commands
             this.SetHandler(HandleUnzipAsync, sourceArg);
         }
 
-        private async Task HandleUnzipAsync(string path)
+        private Task HandleUnzipAsync(string path)
         {
             _sw = Stopwatch.StartNew();
             CommandLine.WriteLine($"Scanning for files in {path}...", ConsoleColor.DarkGray);
@@ -29,11 +29,11 @@ namespace Parallel.Cli.Commands
             if (files.Length == 0)
             {
                 CommandLine.WriteLine("No files found to unzip!", ConsoleColor.Yellow);
-                return;
+                return Task.CompletedTask;
             }
 
             CommandLine.WriteLine($"Unzipping {files.Length:N0} files...", ConsoleColor.DarkGray);
-            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }; 
+            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
             System.Threading.Tasks.Parallel.ForEach(files, options, (file, ct) =>
             {
                 using (FileStream openFile = File.OpenRead(file))
@@ -42,12 +42,13 @@ namespace Parallel.Cli.Commands
                 {
                     gZip.CopyTo(createFile);
                 }
-                
+
                 File.SetAttributes(file, File.GetAttributes(file) & ~FileAttributes.ReadOnly);
                 File.Delete(file);
             });
 
             CommandLine.WriteLine($"Successfully unzipped {files.Length:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
+            return Task.CompletedTask;
         }
 
         private void DecompressFile(string path, bool keep)

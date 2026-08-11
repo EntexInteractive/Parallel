@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Collections.Concurrent;
 using System.Data;
@@ -96,14 +96,16 @@ namespace Parallel.Core.IO.Scanning
         public static bool HasChanged(LocalFile source, LocalFile? target)
         {
             if (target is null || source.LastWrite.TotalMilliseconds <= target.LastWrite.TotalMilliseconds) return false;
-            if (!source.TryGenerateCheckSums() || !target.TryGenerateCheckSums()) return false;
+            if (!source.TryGenerateLocalCheckSum() || !target.TryGenerateLocalCheckSum()) return false;
+            if (!source.TryGenerateRemoteCheckSum() || !target.TryGenerateRemoteCheckSum()) return false;
             return source.LocalCheckSum != target.LocalCheckSum;
         }
-        
+
         public static bool IsSameFile(LocalFile source, LocalFile? target)
         {
             if (target is null) return false;
-            if (!source.TryGenerateCheckSums() || !target.TryGenerateCheckSums()) return false;
+            if (!source.TryGenerateLocalCheckSum() || !target.TryGenerateLocalCheckSum()) return false;
+            if (!source.TryGenerateRemoteCheckSum() || !target.TryGenerateRemoteCheckSum()) return false;
             return source.LocalCheckSum == target.LocalCheckSum;
         }
 
@@ -274,19 +276,19 @@ namespace Parallel.Core.IO.Scanning
             System.Threading.Tasks.Parallel.ForEach(files, ParallelConfig.Options, file =>
             {
                 LocalFile entry = new(file);
-                dict.AddOrUpdate(entry.Name, _ => [entry], (k, v) =>
-                {
-                    lock (v)
+                if (!entry.TryGenerateLocalCheckSum()) return;
+                dict.AddOrUpdate(entry.LocalCheckSum!, _ => [entry], (_, list) =>
                     {
-                        LocalFile? key = v.FirstOrDefault();
-                        if (IsSameFile(entry, key)) v.Add(entry);
-                    }
+                        lock (list)
+                        {
+                            list.Add(entry);
+                        }
 
-                    return v;
-                });
+                        return list;
+                    });
             });
 
-            return dict.Where(kv => kv.Value.Count > 1).OrderByDescending(kv => kv.Value.Count).ToDictionary(k => k.Key, v => v.Value.OrderBy(l => l.LastWrite.TotalMilliseconds).ToArray());
+            return dict.Where(kv => kv.Value.Count > 1).OrderByDescending(kv => kv.Value.Count).ToDictionary(kv => kv.Key, kv => kv.Value.OrderBy(l => l.LastWrite.TotalMilliseconds).ToArray());
         }
 
         /// <summary>
@@ -320,7 +322,7 @@ namespace Parallel.Core.IO.Scanning
             string[] dirs = path.Split(Path.DirectorySeparatorChar);
             string fileName = Path.GetFileName(path);
             string extension = Path.GetExtension(path);
-            
+
             foreach (string entry in exempt)
             {
                 if (path.StartsWith(entry, StringComparison.OrdinalIgnoreCase))
