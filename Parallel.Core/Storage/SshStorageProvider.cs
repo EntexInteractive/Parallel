@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Diagnostics;
 using System.IO.Compression;
@@ -92,7 +92,7 @@ namespace Parallel.Core.Storage
         {
             InsureConnection();
             if (!await ExistsAsync(remotePath)) return null;
-            
+
             await using SftpFileStream openStream = _client.OpenRead(remotePath);
             await using FileStream createStream = File.Create(file.Fullname);
             await using ZstdStream zstdStream = new(openStream, ZstdStreamMode.Decompress);
@@ -142,7 +142,7 @@ namespace Parallel.Core.Storage
 
             string tempPath = remotePath + ".tmp";
             await CreateDirectoryAsync(await GetDirectoryName(remotePath));
-            
+
             long totalBytes = 0;
             await using SftpFileStream createStream = _client.Create(tempPath);
             await using HashStream hashStream = new(createStream, b => totalBytes = b);
@@ -156,7 +156,7 @@ namespace Parallel.Core.Storage
             if (overwrite && await ExistsAsync(remotePath)) await _client.DeleteFileAsync(remotePath, ct);
             await _client.RenameFileAsync(tempPath, remotePath, ct);
             _client.ChangePermissions(remotePath, 444);
-            
+
             string remoteChecksum = hashStream.GetHashHexString();
             Log.Information("Uploaded file: {SourcePath} ({RemoteChecksum})", file.Fullname, remoteChecksum);
             return new RemoteFile(file.Name, file.Fullname, file.LastWrite, file.LastUpdate, totalBytes, remoteChecksum);

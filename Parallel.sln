@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parallel.Core", "Parallel.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parallel.Cli", "Parallel.Cli\Parallel.Cli.csproj", "{4BFE65E9-9534-4C85-B59F-1F64A998C76D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parallel.Desktop", "Parallel.Desktop\Parallel.Desktop.csproj", "{85113B09-8E51-4745-B638-85863711AABB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

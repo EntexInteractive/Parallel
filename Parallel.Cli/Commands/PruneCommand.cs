@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.CommandLine;
 using System.Diagnostics;
@@ -135,7 +135,7 @@ namespace Parallel.Cli.Commands
             {
                 files = await (syncManager.Database?.GetFilesAsync(path, timestamp, true) ?? Task.FromResult<IReadOnlyList<LocalFile>>([]));
             }
-            
+
             if (files.Count == 0)
             {
                 CommandLine.WriteLine($"No prunable files were found!", ConsoleColor.Yellow);

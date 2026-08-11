@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Parallel.Core.Database;
 using Parallel.Core.IO.Syncing;
+using Parallel.Core.Models;
 using Parallel.Core.Security;
 using Parallel.Core.Storage;
 using Parallel.Core.Utils;
@@ -30,14 +31,17 @@ namespace Parallel.Core.Settings
         public int PrunePeriod { get; set; } = 180;
 
         /// <summary>
-        /// A collection of directories to be backed up.
-        /// <para>Default: Empty</para>
+        /// A collection of directories to be pushed to vaults.
         /// </summary>
-        public HashSet<string> BackupDirectories { get; } = CreateBackupDirectories();
+        public HashSet<string> PushDirectories { get; } = CreatePushDirectories();
+
+        /// <summary>
+        /// A collection of directories to be pulled when reconciling.
+        /// </summary>
+        public HashSet<PullRecord> PullDirectories { get; } = [];
 
         /// <summary>
         /// A collection of directories to be ignored when archiving or cleaning.
-        /// <para>Default: Empty</para>
         /// </summary>
         public HashSet<string> IgnoreDirectories { get; } = CreateIgnoreDirectories();
 
@@ -51,17 +55,18 @@ namespace Parallel.Core.Settings
         public RemoteVaultConfig(LocalVaultConfig localVault) : base(localVault.Id, localVault.Name, localVault.Credentials) { }
 
         [JsonConstructor]
-        public RemoteVaultConfig(string id, string name, StorageCredentials credentials, int prunePeriod, IEnumerable<string> backupDirectories, IEnumerable<string> ignoreDirectories, IEnumerable<string> pruneDirectories) : base(id, name, credentials)
+        public RemoteVaultConfig(string id, string name, StorageCredentials credentials, int prunePeriod, IEnumerable<string>? pushDirectories, IEnumerable<PullRecord>? pullDirectories, IEnumerable<string>? ignoreDirectories, IEnumerable<string>? pruneDirectories) : base(id, name, credentials)
         {
             PrunePeriod = prunePeriod;
-            BackupDirectories = new HashSet<string>(backupDirectories);
-            IgnoreDirectories = new HashSet<string>(ignoreDirectories);
-            PruneDirectories = new HashSet<string>(pruneDirectories);
+            PushDirectories = new HashSet<string>(pushDirectories ?? []);
+            PullDirectories = new HashSet<PullRecord>(pullDirectories ?? []);
+            IgnoreDirectories = new HashSet<string>(ignoreDirectories ?? []);
+            PruneDirectories = new HashSet<string>(pruneDirectories ?? []);
         }
 
         #region Privates
 
-        private static HashSet<string> CreateBackupDirectories()
+        private static HashSet<string> CreatePushDirectories()
         {
             return
             [
@@ -115,7 +120,7 @@ namespace Parallel.Core.Settings
 
         public void Save(string path)
         {
-            File.WriteAllText(path, JsonConvert.SerializeObject(this));
+            File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
     }
 }

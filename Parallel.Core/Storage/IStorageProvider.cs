@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Kyle Ebbinga
+﻿// Copyright 2026 Entex Interactive
 
 using Parallel.Core.Diagnostics;
 using Parallel.Core.Models;
@@ -15,7 +15,7 @@ namespace Parallel.Core.Storage
         /// </summary>
         /// <returns></returns>
         Task<bool> CheckConnectionAsync();
-        
+
         /// <summary>
         /// Creates all directories and subdirectories in the specified path unless they already exist.
         /// </summary>
@@ -68,7 +68,7 @@ namespace Parallel.Core.Storage
         /// <param name="ct"></param>
         /// <returns></returns>
         Task<RemoteFile?> GetFileAsync(string path);
-        
+
         Task<string?> HashFileAsync(string remotePath, int bufferSize, CancellationToken ct);
 
         /// <summary>
