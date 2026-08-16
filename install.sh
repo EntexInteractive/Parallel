@@ -19,10 +19,10 @@ VERSION=$(echo "$RELEASE_INFO" | jq -r '.tag_name')
 DOWNLOAD_URL=$(echo "$RELEASE_INFO" | jq -r --arg pattern "$ASSET_PATTERN" '.assets[] | select(.name | test($pattern)) | .browser_download_url' | head -n 1)
 [[ -z "$DOWNLOAD_URL" ]] && { echo "Could not find a valid release."; exit 1; }
 
-echo "[2/5] Downloading $VERSION..."
+echo "[2/5] Downloading Parallel $VERSION..."
 curl -sSL -o "$ZIP_FILE" "$DOWNLOAD_URL"
 
-echo "[3/5] Installing $VERSION..."
+echo "[3/5] Installing..."
 rm -rf "$INSTALL_ROOT"
 mkdir -p "$INSTALL_ROOT"
 unzip -q "$ZIP_FILE" -d "$INSTALL_ROOT"
