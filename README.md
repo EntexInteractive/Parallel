@@ -2,7 +2,7 @@
 
 [![.NET](https://img.shields.io/github/actions/workflow/status/EntexInteractive/Parallel/dotnet-build.yml?label=Main%20build&style=for-the-badge)](https://github.com/EntexInteractive/Parallel/actions/workflows/dotnet-build.yml) [![latest version](https://img.shields.io/github/v/release/EntexInteractive/Parallel?label=Latest%20release&style=for-the-badge)](https://github.com/EntexInteractive/Parallel/releases/latest) [![GitHub Downloads](https://img.shields.io/github/downloads/EntexInteractive/Parallel/total?style=for-the-badge)](https://github.com/EntexInteractive/Parallel/releases/latest)
 
-Your files under your control.
+#### As of 8/14/2026: Development of Parallel has been succeeded by [Vertex](https://github.com/EntexInteractive/Vertex), which expands the project into a more robust file processing and synchronization system.
 
 ## What is Parallel?
 
