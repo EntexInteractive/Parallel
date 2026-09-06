@@ -2,11 +2,9 @@
 
 [![.NET](https://img.shields.io/github/actions/workflow/status/EntexInteractive/Parallel/dotnet-build.yml?label=Main%20build&style=for-the-badge)](https://github.com/EntexInteractive/Parallel/actions/workflows/dotnet-build.yml) [![latest version](https://img.shields.io/github/v/release/EntexInteractive/Parallel?label=Latest%20release&style=for-the-badge)](https://github.com/EntexInteractive/Parallel/releases/latest) [![GitHub Downloads](https://img.shields.io/github/downloads/EntexInteractive/Parallel/total?style=for-the-badge)](https://github.com/EntexInteractive/Parallel/releases/latest)
 
-#### As of 8/14/2026: Development of Parallel has been succeeded by [Vertex](https://github.com/EntexInteractive/Vertex), which expands the project into a more robust file processing and synchronization system.
-
 ## What is Parallel?
 
-Parallel is a **snapshot‑based backup and sync engine** built for people who want real control over their data. It doesn’t assume you want everything in the cloud, and it doesn’t hide what it’s doing. It builds a local‑first, verifiable history of your files across Windows, macOS, and Linux.
+Parallel is a **snapshot‑based cold backup and sync engine** built for people who want real control over their data. It doesn’t assume you want everything in the cloud, and it doesn’t hide what it’s doing. It builds a local‑first, verifiable history of your files across Windows, macOS, and Linux.
 
 Under the hood, Parallel works much more like **Git across the whole filesystem** than a typical sync tool. Every file is hashed, deduped, and stored as an immutable object. Snapshots are fast and incremental, so you can keep a long history without wasting space.
 
@@ -35,10 +33,16 @@ cd Parallel
 dotnet build
 ```
 
-On Linux systems, you can install via:
+On Debian-based Linux systems, you can install via:
 ```
 curl -sSL https://raw.githubusercontent.com/EntexInteractive/Parallel/main/install.sh | sudo bash
 ```
+
+On macOS, Parallel may occasionally be flagged by the system’s security protections. For testing purposes, you can remove the quarantine attribute with:
+```
+xattr -d com.apple.quarantine ./Parallel
+```
+*Note: Only remove the quarantine attribute if you trust the binary and are using it for testing. This bypasses a macOS security check and should not be used as a general workaround.*
 
 #### 2. Set up your vaults
 Vaults are storage targets where Parallel sends and receives files. This can be an external drive, a NAS share, an SSH server, or an S3-compatible cloud.
