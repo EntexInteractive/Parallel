@@ -4,6 +4,7 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Parallel.Core.Tasks;
 
 namespace Parallel.Cli.Services
 {
@@ -31,6 +32,10 @@ namespace Parallel.Cli.Services
             if (prune) builder.Services.AddHostedService<PruneService>();
             if (sync) builder.Services.AddHostedService<SyncService>();
             builder.Services.AddHostedService<LifetimeService>();
+            builder.Services.AddHostedService<TaskService>();
+            
+            builder.Services.AddSingleton<TaskQueueExecutor>();
+            builder.Services.AddSingleton<TaskQueuer>();
             
             builder.Logging.ClearProviders();
             builder.Logging.AddSerilog();

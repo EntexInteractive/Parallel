@@ -64,7 +64,7 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            foreach (string path in syncManager.RemoteVault.PushDirectories)
+            foreach (string path in syncManager.RemoteVault.SyncDirectories)
             {
                 await ScrubInternalAsync(syncManager, path, verbose);
             }

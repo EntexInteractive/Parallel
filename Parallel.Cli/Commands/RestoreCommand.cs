@@ -44,17 +44,6 @@ namespace Parallel.Cli.Commands
             this.AddOption(_dryRunOpt);
             this.AddOption(_verboseOpt);
             this.SetHandler(HandlePullAsync, _sourceOpt, _configOpt, _beforeOpt, _destOpt, _archiveOpt, _forceOpt, _verboseOpt, _dryRunOpt);
-            
-            this.AddCommand(addCmd);
-            addCmd.AddArgument(_sourceArg);
-            addCmd.AddOption(_configOpt);
-            addCmd.AddOption(_destOpt);
-            addCmd.SetHandler(HandleAddAsync, _sourceArg, _configOpt, _destOpt);
-
-            this.AddCommand(removeCmd);
-            removeCmd.AddArgument(_sourceArg);
-            removeCmd.AddOption(_configOpt);
-            removeCmd.SetHandler(HandleRemoveAsync, _sourceArg, _configOpt);
         }
 
         private async Task HandlePullAsync(string? path, string? config, DateTime before, string? destination, bool archive, bool force, bool verbose, bool dryRun)
@@ -95,10 +84,10 @@ namespace Parallel.Cli.Commands
                 return;
             }
 
-            foreach (PullRecord record in syncManager.RemoteVault.PullDirectories.Where(r => r.Machine == Environment.MachineName))
+            /*foreach (PullRecord record in syncManager.RemoteVault.PullDirectories.Where(r => r.Machine == Environment.MachineName))
             {
                 await PullInternalAsync(syncManager, record.Source, timestamp, (output ?? record.Destination), archive, force, verbose, dryRun);
-            }
+            }*/
         }
 
         private async Task PullPathAsync(LocalVaultConfig vault, string path, DateTime timestamp, string? destination, bool archive, bool force, bool verbose, bool dryRun)
@@ -148,85 +137,11 @@ namespace Parallel.Cli.Commands
             {
                 CommandLine.WriteLine(syncManager.RemoteVault, $"Pulling {restoreFiles.Count:N0} files...", ConsoleColor.DarkGray);
                 IProgressReporter progressReporter = verbose ? new ProgressReporter(syncManager.RemoteVault, restoreFiles.Count) : new LoggingProgressReporter(syncManager.RemoteVault);
-                int pulledFiles = await syncManager.PullFilesAsync(restoreFiles.ToArray(), progressReporter);
+                int pulledFiles = await syncManager.RestoreFilesAsync(restoreFiles.ToArray(), progressReporter);
 
                 CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully pulled {pulledFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
                 await syncManager.DisconnectAsync();
             }
         }
-
-        #region Add
-
-        private async Task HandleAddAsync(string path, string? config, string? destination)
-        {
-            LocalVaultConfig? localVault = string.IsNullOrEmpty(config) ? ParallelConfig.Load().Vaults.FirstOrDefault(v => v.Enabled) : ParallelConfig.GetVault(config);
-            if (!string.IsNullOrEmpty(config) && localVault != null)
-            {
-                await AddPathAsync(localVault, path, destination);
-            }
-            else
-            {
-                await Program.Settings.ForEachVaultAsync(vault => AddPathAsync(vault, path, destination));
-            }
-        }
-
-        private async Task AddPathAsync(LocalVaultConfig vault, string path, string? destination)
-        {
-            ISyncManager? syncManager = SyncManager.CreateNew(vault);
-            if (syncManager == null || !await syncManager.ConnectAsync())
-            {
-                CommandLine.WriteLine(vault, "Failed to connect to vault!", ConsoleColor.Red);
-                return;
-            }
-
-            PullRecord record = new(path, destination);
-            if (!syncManager.RemoteVault.PullDirectories.Add(record))
-            {
-                CommandLine.WriteLine(vault, $"Unable to add path: '{path}'", ConsoleColor.Yellow);
-                return;
-            }
-
-            CommandLine.WriteLine(vault, $"Successfully added '{path}'", ConsoleColor.Green);
-            await syncManager.DisconnectAsync();
-        }
-
-        #endregion
-
-        #region Remove
-
-        private async Task HandleRemoveAsync(string path, string? config)
-        {
-            LocalVaultConfig? localVault = string.IsNullOrEmpty(config) ? ParallelConfig.Load().Vaults.FirstOrDefault(v => v.Enabled) : ParallelConfig.GetVault(config);
-            if (!string.IsNullOrEmpty(config) && localVault != null)
-            {
-                await RemovePathAsync(localVault, path);
-            }
-            else
-            {
-                await Program.Settings.ForEachVaultAsync(vault => RemovePathAsync(vault, path));
-            }
-        }
-
-        private async Task RemovePathAsync(LocalVaultConfig vault, string path)
-        {
-            ISyncManager? syncManager = SyncManager.CreateNew(vault);
-            if (syncManager == null || !await syncManager.ConnectAsync())
-            {
-                CommandLine.WriteLine(vault, "Failed to connect to vault!", ConsoleColor.Red);
-                return;
-            }
-
-            IEnumerable<PullRecord> records = syncManager.RemoteVault.PullDirectories.Where(r => r.Machine == Environment.MachineName && r.Source == path);
-            foreach (PullRecord record in records)
-            {
-                if (syncManager.RemoteVault.PullDirectories.Remove(record)) continue;
-                CommandLine.WriteLine(vault, $"Unable to remove path: '{path}'", ConsoleColor.Yellow);
-            }
-
-            CommandLine.WriteLine(vault, $"Successfully removed '{path}'", ConsoleColor.Green);
-            await syncManager.DisconnectAsync();
-        }
-
-        #endregion
     }
 }
