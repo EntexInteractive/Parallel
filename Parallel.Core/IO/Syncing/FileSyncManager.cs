@@ -173,28 +173,38 @@ namespace Parallel.Core.IO.Syncing
         public override async Task<int> ScrubFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress)
         {
             if (!files.Any()) return 0;
+            int corrupted = 0;
             int completed = 0;
+            int unknown = 0;
 
             ConcurrentDictionary<string, SemaphoreSlim> threadPool = new ConcurrentDictionary<string, SemaphoreSlim>();
             await System.Threading.Tasks.Parallel.ForEachAsync(files, ParallelConfig.Options, async (file, ct) =>
             {
-                SemaphoreSlim threadLock = threadPool.GetOrAdd(file.LocalCheckSum!, _ => new SemaphoreSlim(1, 1));
+                SemaphoreSlim threadLock = threadPool.GetOrAdd(file.RemoteCheckSum!, _ => new SemaphoreSlim(1, 1));
                 await threadLock.WaitAsync(ct);
 
                 try
                 {
-                    string? remoteHash = await StorageProvider.HashFileAsync(PathBuilder.GetObjectFile(RemoteVault, file.RemoteCheckSum!), 81920, ct);
+                    string remotePath = PathBuilder.GetObjectFile(RemoteVault, file.RemoteCheckSum!);
+                    string? remoteHash = await StorageProvider.HashFileAsync(remotePath, 81920, ct);
                     if (string.IsNullOrEmpty(remoteHash))
                     {
                         // This is true when the remote file is not in the vault.
-                        progress.Failed(file, "File not found!");
+                        if (!await (Database?.AddHistoryAsync(HistoryType.Pruned, file) ?? Task.FromResult(false))) Log.Error("Failed to add history: {Fullname}", file.Fullname);
+                        if (!await (Database?.RemoveFileAsync(file) ?? Task.FromResult(false))) return;
+                        progress.Report(ProgressOperation.Pruned, file);
+                        Interlocked.Increment(ref unknown);
                         return;
                     }
 
                     if (file.RemoteCheckSum != remoteHash)
                     {
                         // Is it true is the file stored is corrupted
-                        progress.Failed(file, "File corrupted!");
+                        if (!await (Database?.AddHistoryAsync(HistoryType.Pruned, file) ?? Task.FromResult(false))) Log.Error("Failed to add history: {Fullname}", file.Fullname);
+                        if (!await (Database?.RemoveFileAsync(file) ?? Task.FromResult(false))) return;
+                        await StorageProvider.DeleteFileAsync(remotePath);
+                        progress.Report(ProgressOperation.Pruned, file);
+                        Interlocked.Increment(ref corrupted);
                         return;
                     }
 
@@ -211,6 +221,7 @@ namespace Parallel.Core.IO.Syncing
                 }
             });
 
+            Console.WriteLine($"Unknown: {unknown}, Corrupted: {corrupted}, Completed: {completed}");
             return completed;
         }
     }
