@@ -109,7 +109,7 @@ namespace Parallel.Cli.Commands
             }
 
             ConcurrentBag<SnapshotRecord> snapshots = new();
-            await System.Threading.Tasks.Parallel.ForEachAsync(syncManager.RemoteVault.PushDirectories, ParallelConfig.Options, async (path, ct) =>
+            await System.Threading.Tasks.Parallel.ForEachAsync(syncManager.RemoteVault.SyncDirectories, ParallelConfig.Options, async (path, ct) =>
             {
                 IReadOnlyList<LocalFile> files = await (syncManager.Database?.GetLatestFilesAsync(path, DateTime.UtcNow, false) ?? Task.FromResult<IReadOnlyList<LocalFile>>([]));
                 foreach (LocalFile file in files) snapshots.Add(new SnapshotRecord(file));

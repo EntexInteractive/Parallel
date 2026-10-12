@@ -4,6 +4,7 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Parallel.Core.Tasks;
 
 namespace Parallel.Cli.Services
 {
@@ -15,22 +16,23 @@ namespace Parallel.Cli.Services
         
         public RunCommand() : base("run", "Starts the background services.")
         {
-            this.AddOption(_cleanOpt);
-            this.AddOption(_syncOpt);
-            this.AddOption(_pruneOpt);
-            this.SetHandler(HandleCommandAsync, _cleanOpt,  _pruneOpt, _syncOpt);
+            this.SetHandler(HandleCommandAsync);
         }
 
-        private async Task HandleCommandAsync(bool clean, bool prune, bool sync)
+        private async Task HandleCommandAsync()
         {
             HostApplicationBuilder builder = Host.CreateApplicationBuilder();
             if (OperatingSystem.IsWindows()) builder.Services.AddWindowsService();
             if (OperatingSystem.IsLinux()) builder.Services.AddSystemd();
             
-            if (clean) builder.Services.AddHostedService<CleanService>();
-            if (prune) builder.Services.AddHostedService<PruneService>();
-            if (sync) builder.Services.AddHostedService<SyncService>();
             builder.Services.AddHostedService<LifetimeService>();
+            builder.Services.AddHostedService<CleanService>();
+            builder.Services.AddHostedService<PruneService>();
+            builder.Services.AddHostedService<SyncService>();
+            
+            builder.Services.AddHostedService<TaskService>();
+            builder.Services.AddSingleton<TaskQueueExecutor>();
+            builder.Services.AddSingleton<TaskQueuer>();
             
             builder.Logging.ClearProviders();
             builder.Logging.AddSerilog();

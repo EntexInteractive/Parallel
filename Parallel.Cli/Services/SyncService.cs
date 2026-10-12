@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Parallel.Core.IO.Syncing;
 using Parallel.Core.Settings;
+using Parallel.Core.Tasks;
 
 namespace Parallel.Cli.Services
 {
@@ -24,11 +25,12 @@ namespace Parallel.Cli.Services
     {
         private readonly ConcurrentDictionary<string, SyncWorker> _vaults = new();
         private readonly ILogger<SyncService> _logger;
-        //private readonly TaskQueuer _queuer;
+        private readonly TaskQueuer _queuer;
         
-        public SyncService(ILogger<SyncService> logger)
+        public SyncService(ILogger<SyncService> logger, TaskQueuer queuer)
         {
             _logger = logger;
+            _queuer = queuer;
         }
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -73,6 +75,12 @@ namespace Parallel.Cli.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                _queuer.Enqueue(syncManager.Id, (ct) =>
+                {
+                    Console.WriteLine($"Syncing vault {syncManager.Id}");
+                    return Task.CompletedTask;
+                });
+
                 Log.Debug($"{syncManager.Id} will sync every {syncManager.RemoteVault.SyncInterval} minutes");
                 //await Task.Delay(TimeSpan.FromMinutes(syncManager.RemoteVault.SyncInterval), stoppingToken);
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);

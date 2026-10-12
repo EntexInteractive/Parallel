@@ -29,7 +29,8 @@ namespace Parallel.Core.Storage
         /// <param name="localVault">The credentials to log in with.</param>
         public SshStorageProvider(LocalVaultConfig localVault)
         {
-            _connectionInfo = new ConnectionInfo(localVault.Credentials.Address, localVault.Credentials.Username, new PasswordAuthenticationMethod(localVault.Credentials.Username, Encryption.Decode(localVault.Credentials.Password)));
+            //_connectionInfo = new ConnectionInfo(localVault.Credentials.Address, localVault.Credentials.Username, [new PasswordAuthenticationMethod(localVault.Credentials.Username, Encryption.Decode(localVault.Credentials.Password))]);
+            _connectionInfo = new ConnectionInfo(localVault.Credentials.Address ?? string.Empty, localVault.Credentials.Username ?? string.Empty, [new PasswordAuthenticationMethod(localVault.Credentials.Username, Encryption.Decode(localVault.Credentials.Password))]);
             _client = new SftpClient(_connectionInfo);
         }
 

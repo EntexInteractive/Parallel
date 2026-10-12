@@ -33,12 +33,7 @@ namespace Parallel.Core.Settings
         /// <summary>
         /// A collection of directories to be pushed to vaults.
         /// </summary>
-        public HashSet<string> PushDirectories { get; } = CreatePushDirectories();
-
-        /// <summary>
-        /// A collection of directories to be pulled when reconciling.
-        /// </summary>
-        public HashSet<PullRecord> PullDirectories { get; } = [];
+        public HashSet<string> SyncDirectories { get; } = CreateSyncDirectories();
 
         /// <summary>
         /// A collection of directories to be ignored when archiving or cleaning.
@@ -58,15 +53,14 @@ namespace Parallel.Core.Settings
         public RemoteVaultConfig(string id, string name, StorageCredentials credentials, int prunePeriod, IEnumerable<string>? pushDirectories, IEnumerable<PullRecord>? pullDirectories, IEnumerable<string>? ignoreDirectories, IEnumerable<string>? pruneDirectories) : base(id, name, credentials)
         {
             PrunePeriod = prunePeriod;
-            PushDirectories = new HashSet<string>(pushDirectories ?? []);
-            PullDirectories = new HashSet<PullRecord>(pullDirectories ?? []);
+            SyncDirectories = new HashSet<string>(pushDirectories ?? []);
             IgnoreDirectories = new HashSet<string>(ignoreDirectories ?? []);
             PruneDirectories = new HashSet<string>(pruneDirectories ?? []);
         }
 
         #region Privates
 
-        private static HashSet<string> CreatePushDirectories()
+        private static HashSet<string> CreateSyncDirectories()
         {
             return
             [
