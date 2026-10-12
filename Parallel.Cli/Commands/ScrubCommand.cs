@@ -88,15 +88,24 @@ namespace Parallel.Cli.Commands
             IReadOnlyList<LocalFile> files = await (syncManager.Database?.GetFilesAsync(path, DateTime.Now) ?? Task.FromResult<IReadOnlyList<LocalFile>>([]));
             if (files.Count == 0)
             {
-                CommandLine.WriteLine($"No prunable files were found!", ConsoleColor.Yellow);
+                CommandLine.WriteLine($"No files were found!", ConsoleColor.Yellow);
                 return;
             }
 
             CommandLine.WriteLine(syncManager.RemoteVault, $"Scrubbing {files.Count:N0} files...", ConsoleColor.DarkGray);
             IProgressReporter progressReporter = verbose ? new ProgressReporter(syncManager.RemoteVault, files.Count) : new LoggingProgressReporter(syncManager.RemoteVault);
-            int scrubbedFiles = await syncManager.ScrubFilesAsync(files, progressReporter);
+            int validFiles = await syncManager.ScrubFilesAsync(files, progressReporter);
+            if (validFiles == files.Count)
+            {
+                CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully scrubbed {files.Count:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
+            }
+            else
+            {
+                int corrupted = files.Count - validFiles;
+                CommandLine.WriteLine(syncManager.RemoteVault, $"Removed {corrupted:N0} corrupted or missing files in {_sw.Elapsed}.", ConsoleColor.Yellow);
+            }
 
-            CommandLine.WriteLine(syncManager.RemoteVault, $"Successfully scrubbed {scrubbedFiles:N0} files in {_sw.Elapsed}.", ConsoleColor.Green);
+            
             await syncManager.DisconnectAsync();
         }
     }
