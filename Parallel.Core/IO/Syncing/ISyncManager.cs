@@ -49,28 +49,36 @@ namespace Parallel.Core.IO.Syncing
         Task DisconnectAsync();
 
         /// <summary>
-        /// Backs up an array of files to a vault.
+        /// Synchronizes a list of local files with the remote storage. Files will be uploaded if they differ from their remote counterpart or if they do not exist in the remote storage.
         /// </summary>
-        /// <param name="files"></param>
-        /// <param name="progress"></param>
-        /// <param name="overwrite"></param>
+        /// <param name="files">A read-only list of local files to be considered for synchronization.</param>
+        /// <param name="progress">An <see cref="IProgressReporter"/> instance to report the progress of the sync operation.</param>
+        /// <param name="overwrite">A boolean flag indicating whether existing files on the remote storage should be overwritten.</param>
+        /// <returns>Returns the number of files that were successfully synchronized.</returns>
         Task<int> SyncFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress, bool overwrite);
 
         /// <summary>
-        /// Restores an array of files from a vault.
+        /// Restores the specified list of local files from a remote storage, updating the progress through the provided progress reporter.
         /// </summary>
-        /// <param name="files"></param>
-        /// <param name="progress"></param>
+        /// <param name="files">A read-only list of local files to be considered for restoration.</param>
+        /// <param name="progress">An <see cref="IProgressReporter"/> instance to report the progress of the restore operation.</param>
+        /// <returns>Returns the number of files that were successfully restored.</returns>
         Task<int> RestoreFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
 
         /// <summary>
-        /// Deletes files from a vault.
+        /// Removes unnecessary or transient files from the provided list of local files to clean up storage, retaining only essential data.
         /// </summary>
-        /// <param name="files"></param>
-        /// <param name="progress"></param>
-        /// <returns></returns>
+        /// <param name="files">A read-only list of local files to be considered for pruning.</param>
+        /// <param name="progress">An <see cref="IProgressReporter"/> instance to report the progress of the pruning operation.</param>
+        /// <returns>Returns the number of files that were successfully pruned.</returns>
         Task<int> PruneFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
 
+        /// <summary>
+        /// Scrubs the specified files to ensure they are in a valid state.
+        /// </summary>
+        /// <param name="files">A read-only list of local files to be considered for scrubbing.</param>
+        /// <param name="progress">An <see cref="IProgressReporter"/> instance to report the progress of the scrubbing operation.</param>
+        /// <returns>Returns the number of files that were successfully scrubbed.</returns>
         Task<int> ScrubFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
     }
 }

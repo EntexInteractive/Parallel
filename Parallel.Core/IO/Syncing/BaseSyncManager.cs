@@ -36,9 +36,8 @@ namespace Parallel.Core.IO.Syncing
         public IStorageProvider StorageProvider { get; set; }
 
         /// <summary>
-        /// 
+        /// Represents the base functionality for syncing files to an associated file system.
         /// </summary>
-        /// <param name="localVault"></param>
         protected BaseSyncManager(LocalVaultConfig localVault)
         {
             LocalVault = localVault;
@@ -134,6 +133,7 @@ namespace Parallel.Core.IO.Syncing
         /// <inheritdoc />
         public abstract Task<int> PruneFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
 
+        /// <inheritdoc />
         public abstract Task<int> ScrubFilesAsync(IReadOnlyList<LocalFile> files, IProgressReporter progress);
     }
 }
