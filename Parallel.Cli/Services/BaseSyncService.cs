@@ -21,13 +21,14 @@ namespace Parallel.Cli.Services
         }
     }
     
-    public class SyncService : BackgroundService
+    public abstract class BaseSyncService : BackgroundService
     {
-        private readonly ConcurrentDictionary<string, SyncWorker> _vaults = new();
-        private readonly ILogger<SyncService> _logger;
-        private readonly TaskQueuer _queuer;
+        private readonly ILogger<BaseSyncService> _logger;
         
-        public SyncService(ILogger<SyncService> logger, TaskQueuer queuer)
+        protected readonly ConcurrentDictionary<string, SyncWorker> Vaults = new();
+        protected readonly TaskQueuer _queuer;
+        
+        public BaseSyncService(ILogger<BaseSyncService> logger, TaskQueuer queuer)
         {
             _logger = logger;
             _queuer = queuer;
@@ -39,19 +40,19 @@ namespace Parallel.Cli.Services
             {
                 LocalVaultConfig[] enabledVaults = ParallelConfig.GetEnabledVaults();
                 string[] enabledVaultIds = enabledVaults.Select(v => v.Id).ToArray();
-                string[] disabledVaults = _vaults.Keys.Where(v => !enabledVaultIds.Contains(v)).ToArray();
+                string[] disabledVaults = Vaults.Keys.Where(v => !enabledVaultIds.Contains(v)).ToArray();
 
                 // Adds newly enabled vaults to be synced.
                 foreach (LocalVaultConfig vault in enabledVaults)
                 {
-                    if (_vaults.ContainsKey(vault.Id)) continue;
+                    if (Vaults.ContainsKey(vault.Id)) continue;
 
                     _logger.LogDebug("Adding vault to syncing...");
                     CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
                     Task workerTask = SyncVaultAsync(new FileSyncManager(vault), cts.Token);
                     SyncWorker worker = new SyncWorker(workerTask, cts);
 
-                    if (!_vaults.TryAdd(vault.Id, worker)) continue;
+                    if (!Vaults.TryAdd(vault.Id, worker)) continue;
                     _logger.LogInformation("Added vault to be synced: {VaultId}", vault.Id);
                 }
 
@@ -59,10 +60,10 @@ namespace Parallel.Cli.Services
                 foreach (string id in disabledVaults)
                 {
                     _logger.LogDebug("Removing vault from syncing...");
-                    if (!_vaults.TryGetValue(id, out SyncWorker? worker)) continue;
+                    if (!Vaults.TryGetValue(id, out SyncWorker? worker)) continue;
                     await worker.Cts.CancelAsync();
                     await worker.WorkerTask;
-                    _vaults.TryRemove(id, out _);
+                    Vaults.TryRemove(id, out _);
 
                     _logger.LogInformation("Removed vault from syncing: {VaultId}", id);
                 }
@@ -71,20 +72,6 @@ namespace Parallel.Cli.Services
             }
         }
 
-        private async Task SyncVaultAsync(FileSyncManager syncManager, CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                _queuer.Enqueue(syncManager.Id, (ct) =>
-                {
-                    Console.WriteLine($"Syncing vault {syncManager.Id}");
-                    return Task.CompletedTask;
-                });
-
-                Log.Debug($"{syncManager.Id} will sync every {syncManager.RemoteVault.SyncInterval} minutes");
-                //await Task.Delay(TimeSpan.FromMinutes(syncManager.RemoteVault.SyncInterval), stoppingToken);
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-            }
-        }
+        protected abstract Task SyncVaultAsync(FileSyncManager syncManager, CancellationToken stoppingToken);
     }
 }

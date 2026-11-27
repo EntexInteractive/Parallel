@@ -26,9 +26,14 @@ namespace Parallel.Cli.Services
             if (OperatingSystem.IsLinux()) builder.Services.AddSystemd();
             
             builder.Services.AddHostedService<LifetimeService>();
-            builder.Services.AddHostedService<TaskService>();
+            //builder.Services.AddHostedService<CleanService>();
+            //builder.Services.AddHostedService<PruneService>();
+
+            builder.Services.AddHostedService<WatcherSyncService>();
             
-            builder.Services.AddSingleton<TaskQueueExecutor>();
+            //builder.Services.AddHostedService<TaskService>();
+            
+            //builder.Services.AddSingleton<TaskQueueExecutor>();
             builder.Services.AddSingleton<TaskQueuer>();
             
             builder.Logging.ClearProviders();
