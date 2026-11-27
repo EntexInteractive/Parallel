@@ -72,7 +72,7 @@ namespace Parallel.Core.Tasks
                 EnqueuedTask? next = _tasks.Values.MaxBy(t => t.Priority + (DateTime.UtcNow - t.EnqueuedAt).TotalSeconds * 0.1);
                 if (ReferenceEquals(candidate, next))
                 {
-                    _logger.LogDebug($"Starting task with key: '{candidate.Key}', remaining: {_queue.Count - 1}");
+                    _logger.LogDebug("Starting task with key: '{CandidateKey}', remaining: {QueueCount}", candidate.Key, _queue.Count - 1);
                     _tasks.TryRemove(candidate.Key, out _);
                     return candidate.TaskFunc;
                 }
